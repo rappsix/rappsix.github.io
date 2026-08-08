@@ -43,75 +43,87 @@
   .hero{
     position:relative;min-height:100svh;display:flex;align-items:center;
     overflow:hidden;isolation:isolate;
+    background:
+      radial-gradient(ellipse 55% 60% at 72% 48%, #0e3a72 0%, transparent 62%),
+      radial-gradient(ellipse 70% 60% at 20% 30%, #071a3a 0%, transparent 65%),
+      #04060d;
   }
-  #net{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block}
+  #gl{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block}
   .hero::after{
     content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
     background:
-      radial-gradient(ellipse 60% 55% at 22% 40%, rgba(47,123,255,.20), transparent 65%),
-      radial-gradient(ellipse 45% 45% at 82% 25%, rgba(34,211,238,.13), transparent 65%),
-      linear-gradient(180deg, transparent 55%, var(--bg) 98%);
+      linear-gradient(90deg,rgba(3,5,12,.88) 0%,rgba(3,5,12,.55) 34%,transparent 58%),
+      linear-gradient(180deg,rgba(4,6,13,.5) 0%,transparent 20%,transparent 60%,var(--bg) 99%);
   }
-  .hero .wrap{position:relative;z-index:2;width:100%;padding-top:80px;padding-bottom:80px}
+  .hero .wrap{position:relative;z-index:2;width:100%;max-width:1180px;padding-top:80px;padding-bottom:80px}
+  .hgrid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:40px;align-items:center}
+  .hleft{max-width:620px}
+
+  /* появление строк героя */
+  .up{opacity:0;transform:translateY(26px);animation:up .9s cubic-bezier(.16,.84,.28,1) forwards}
+  @keyframes up{to{opacity:1;transform:none}}
 
   .eyebrow{
     display:inline-flex;align-items:center;gap:9px;
     font:600 11.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
     color:var(--ice);padding:7px 13px;border-radius:999px;
-    border:1px solid rgba(125,211,252,.24);background:rgba(47,123,255,.07);
-    backdrop-filter:blur(6px);
+    border:1px solid rgba(125,211,252,.26);background:rgba(8,16,34,.5);
+    backdrop-filter:blur(8px);
   }
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(34,211,238,.6);animation:pulse 2.4s ease-out infinite}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 2.4s ease-out infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,211,238,.55)}70%{box-shadow:0 0 0 9px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
 
   h1{
-    font-size:clamp(44px,9vw,92px);line-height:.98;letter-spacing:-.04em;font-weight:800;
-    margin-top:26px;color:#fff;text-shadow:0 0 60px rgba(47,123,255,.35);
+    font-size:clamp(42px,7.2vw,80px);line-height:.98;letter-spacing:-.045em;font-weight:800;
+    margin-top:24px;color:#fff;text-shadow:0 4px 44px rgba(0,0,0,.7);
   }
-  h1 .l{display:inline-block;opacity:0;transform:translateY(.42em) rotate(2deg);
-    animation:rise .78s cubic-bezier(.2,.8,.25,1) forwards}
+  h1 .l{display:inline-block;opacity:0;transform:translateY(.5em) scale(.94);
+    animation:rise .8s cubic-bezier(.16,.84,.28,1) forwards}
   @keyframes rise{to{opacity:1;transform:none}}
   .role{
-    margin-top:14px;font-size:clamp(20px,3.4vw,34px);font-weight:700;letter-spacing:-.02em;
-    background:linear-gradient(100deg,var(--ice) 0%,var(--blue) 55%,#a78bfa 100%);
-    background-size:200% 100%;
+    margin-top:14px;font-size:clamp(19px,2.7vw,30px);font-weight:700;letter-spacing:-.02em;
+    background:linear-gradient(100deg,var(--ice) 0%,var(--blue) 50%,#67e8f9 100%);
+    background-size:220% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    animation:shift 7s ease-in-out infinite;
+    animation:shift 8s ease-in-out infinite;
   }
   @keyframes shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .role.up{animation:up .9s cubic-bezier(.16,.84,.28,1) forwards,shift 8s ease-in-out infinite}
 
-  .tagline{
-    font-size:clamp(17px,2.3vw,22px);color:var(--dim);margin-top:24px;max-width:660px;
-  }
-  .tagline strong{color:var(--text);font-weight:600}
+  .tagline{font-size:clamp(16px,1.9vw,19px);color:#b7c6de;margin-top:22px;text-shadow:0 2px 22px rgba(0,0,0,.75)}
+  .tagline strong{color:#fff;font-weight:600}
 
-  .contacts{display:flex;flex-wrap:wrap;gap:11px;margin-top:36px}
+  .contacts{display:flex;flex-wrap:wrap;gap:11px;margin-top:32px}
   .btn{
     display:inline-flex;align-items:center;gap:8px;
     padding:12px 20px;border-radius:11px;font-size:14.5px;font-weight:600;
-    border:1px solid var(--line-hi);color:var(--text);
-    background:rgba(11,16,32,.6);backdrop-filter:blur(8px);
+    border:1px solid rgba(125,211,252,.22);color:var(--text);
+    background:rgba(8,14,30,.55);backdrop-filter:blur(10px);
     transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;
   }
-  .btn:hover{border-color:var(--blue);transform:translateY(-2px);text-decoration:none;
-    box-shadow:0 8px 26px -12px var(--glow)}
+  .btn:hover{border-color:var(--cyan);transform:translateY(-2px);text-decoration:none;
+    box-shadow:0 10px 30px -14px rgba(34,211,238,.8)}
   .btn.primary{
-    background:linear-gradient(100deg,var(--blue),#1e63e0);border-color:transparent;color:#fff;
-    box-shadow:0 10px 30px -14px rgba(47,123,255,.9);
+    background:linear-gradient(100deg,var(--blue),#1656d6);border-color:transparent;color:#fff;
+    box-shadow:0 12px 34px -14px rgba(47,123,255,1);
   }
-  .btn.primary:hover{filter:brightness(1.09)}
+  .btn.primary:hover{filter:brightness(1.1)}
 
-  .meta{margin-top:30px;font-size:14px;color:var(--faint)}
-  .meta span{color:var(--dim)}
+  .meta{margin-top:26px;font-size:13.5px;color:#7b8ca8}
+  .meta span{color:#a9bad4}
 
   .scroll-cue{
-    position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
-    font:500 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+    position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:2;
+    font:500 10.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:#5d6d88;
     display:flex;flex-direction:column;align-items:center;gap:9px;
   }
   .scroll-cue i{display:block;width:1px;height:34px;background:linear-gradient(var(--cyan),transparent);animation:cue 1.9s ease-in-out infinite}
   @keyframes cue{0%,100%{opacity:.25;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
 
+  @media (max-width:900px){
+    .hgrid{grid-template-columns:1fr}
+    .hleft{max-width:none}
+  }
   /* ══════════ STATS ══════════ */
   .stats{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -219,29 +231,34 @@
 
 <!-- ══════════ HERO ══════════ -->
 <header class="hero">
-  <canvas id="net"></canvas>
+  <canvas id="gl"></canvas>
   <div class="wrap">
-    <span class="eyebrow"><i class="dot"></i>Python-разработчик · Москва</span>
+    <div class="hgrid">
+      <div class="hleft">
+        <span class="eyebrow up" style="animation-delay:.05s"><i class="dot"></i>Python-разработчик · Москва</span>
 
-    <h1 id="name">Иван Титов</h1>
-    <div class="role rv">Backend на Python · продукты целиком</div>
+        <h1 id="name">Иван Титов</h1>
+        <div class="role up" style="animation-delay:.75s">Backend на Python</div>
 
-    <p class="tagline rv">
-      Делаю продукты целиком — от схемы базы данных до nginx и автодеплоя.
-      Сейчас в продакшне живёт <strong>Zapisly</strong> — SaaS-платформа онлайн-записи,
-      которую я написал и поддерживаю один.
-    </p>
+        <p class="tagline up" style="animation-delay:.9s">
+          Делаю продукты целиком — от схемы базы данных до nginx и автодеплоя.
+          Сейчас в продакшне живёт <strong>Zapisly</strong> — SaaS-платформа онлайн-записи,
+          которую я написал и поддерживаю один.
+        </p>
 
-    <div class="contacts rv">
-      <a class="btn primary" href="https://t.me/rappsix">Telegram · @rappsix</a>
-      <a class="btn" href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a>
-      <a class="btn" href="https://github.com/rappsix">GitHub</a>
+        <div class="contacts up" style="animation-delay:1.05s">
+          <a class="btn primary" href="https://t.me/rappsix">Telegram · @rappsix</a>
+          <a class="btn" href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a>
+          <a class="btn" href="https://github.com/rappsix">GitHub</a>
+        </div>
+
+        <p class="meta up" style="animation-delay:1.2s">
+          18 лет · РАНХиГС, прикладная информатика · <span>удалённо или гибрид</span> ·
+          <span>полная или частичная занятость</span> · английский B1+
+        </p>
+      </div>
+      <div aria-hidden="true"></div>
     </div>
-
-    <p class="meta rv">
-      18 лет · РАНХиГС, прикладная информатика · <span>удалённо или гибрид</span> ·
-      <span>полная или частичная занятость</span> · английский B1+
-    </p>
   </div>
   <div class="scroll-cue">листай<i></i></div>
 </header>
@@ -458,116 +475,121 @@
     h1.appendChild(s);
   }
 
-  /* ---------- 2. фон: сеть узлов + курсор ---------- */
-  var cv = document.getElementById('net');
-  var ctx = cv.getContext('2d');
-  var W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
-  var pts = [], mouse = {x: -9999, y: -9999}, t = 0, raf;
+  /* ---------- 2. фон: WebGL — текучая плазма + светящийся орб ---------- */
+  (function(){
+    var cv = document.getElementById('gl');
+    if (!cv || reduce) return;
+    var gl = cv.getContext('webgl', {antialias:false, alpha:true, premultipliedAlpha:false})
+          || cv.getContext('experimental-webgl');
+    if (!gl) return;   // нет WebGL — остаётся CSS-градиент
 
-  function build(){
-    var r = cv.getBoundingClientRect();
-    W = r.width; H = r.height;
-    cv.width = W * DPR; cv.height = H * DPR;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    var VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
 
-    var gap = W < 700 ? 62 : 78;
-    var cols = Math.ceil(W / gap) + 2;
-    var rows = Math.ceil(H / gap) + 2;
-    pts = [];
-    for (var y = 0; y < rows; y++){
-      for (var x = 0; x < cols; x++){
-        pts.push({
-          ox: (x - 0.5) * gap,
-          oy: (y - 0.5) * gap,
-          x: 0, y: 0,
-          ph: (x * 0.6 + y * 0.9)
-        });
-      }
+    var FS = [
+      'precision highp float;',
+      'uniform vec2 R;uniform float T;uniform vec2 M;',
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+      'float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);',
+      ' return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}',
+      'float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*n(p);p*=2.03;a*=.5;}return s;}',
+      'void main(){',
+      ' vec2 uv=(gl_FragCoord.xy-.5*R)/R.y;',
+      ' float t=T*.045;',
+      // --- фоновая плазма: domain warping
+      ' vec2 p=uv*1.25;',
+      ' vec2 q=vec2(fbm(p+vec2(0.,t)),fbm(p+vec2(5.2,1.3)-t));',
+      ' vec2 r=vec2(fbm(p+3.4*q+vec2(1.7,9.2)+.16*t),fbm(p+3.4*q+vec2(8.3,2.8)-.13*t));',
+      ' float f=fbm(p+3.6*r);',
+      ' vec3 col=mix(vec3(.006,.011,.026),vec3(.020,.085,.215),clamp(f*f*2.1,0.,1.));',
+      ' col=mix(col,vec3(.040,.235,.450),clamp(length(q)*.34,0.,1.));',
+      ' col+=vec3(.008,.042,.090)*smoothstep(.25,1.,r.x);',
+      // --- орб справа
+      ' vec2 c=vec2(.60,.015)+M*.05;',
+      ' vec2 d=uv-c;float rr=length(d);float Rr=.40;',
+      ' col+=vec3(.09,.36,.90)*.42*exp(-rr*3.1);',
+      ' col+=vec3(.13,.60,.95)*.20*exp(-rr*8.5);',
+      ' if(rr<Rr){',
+      '  float z=sqrt(max(Rr*Rr-rr*rr,0.))/Rr;',
+      '  vec3 nn=normalize(vec3(d/Rr,z));',
+      '  float s=fbm(nn.xy*2.6+vec2(T*.03,T*.055)+nn.z*1.4);',
+      '  float s2=fbm(nn.xy*6.0-vec2(T*.06,0.)+nn.z);',
+      '  vec3 lig=normalize(vec3(-.42,.48,.77));',
+      '  float dif=clamp(dot(nn,lig),0.,1.);',
+      '  float fres=pow(1.-z,2.6);',
+      '  vec3 oc=mix(vec3(.015,.055,.190),vec3(.13,.66,1.0),s);',
+      '  oc=mix(oc,vec3(.55,.92,1.0),s2*s2*.30);',
+      '  oc=oc*(.26+.95*dif)+vec3(.30,.72,1.0)*fres*1.05;',
+      '  float e=smoothstep(Rr,Rr-.012,rr);',
+      '  col=mix(col,oc,e);',
+      ' }',
+      // --- кольцо-ореол
+      ' float ring=smoothstep(.012,0.,abs(rr-Rr-.035));',
+      ' col+=vec3(.25,.72,1.0)*ring*.35;',
+      // --- виньетка + зерно
+      ' col*=1.-.52*pow(length(uv*vec2(.60,1.)),1.6);',
+      ' col+=(h(gl_FragCoord.xy+fract(T))-.5)*.022;',
+      ' gl_FragColor=vec4(col,1.);',
+      '}'
+    ].join('\n');
+
+    function sh(type,src){
+      var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) return null;
+      return s;
     }
-  }
+    var vs=sh(gl.VERTEX_SHADER,VS), fs=sh(gl.FRAGMENT_SHADER,FS);
+    if(!vs||!fs) return;
+    var pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) return;
+    gl.useProgram(pr);
 
-  function frame(){
-    t += 0.006;
-    ctx.clearRect(0, 0, W, H);
+    var buf=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    var loc=gl.getAttribLocation(pr,'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
 
-    var i, p, dx, dy, d;
-    for (i = 0; i < pts.length; i++){
-      p = pts[i];
-      // мягкая волна
-      p.x = p.ox + Math.sin(t * 1.4 + p.ph) * 9;
-      p.y = p.oy + Math.cos(t * 1.1 + p.ph * 0.7) * 9;
-      // отталкивание от курсора
-      dx = p.x - mouse.x; dy = p.y - mouse.y;
-      d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 170 && d > 0.01){
-        var f = (170 - d) / 170;
-        p.x += (dx / d) * f * 34;
-        p.y += (dy / d) * f * 34;
-      }
+    var uR=gl.getUniformLocation(pr,'R'),
+        uT=gl.getUniformLocation(pr,'T'),
+        uM=gl.getUniformLocation(pr,'M');
+
+    var dpr=Math.min(window.devicePixelRatio||1,1.6);
+    function size(){
+      var b=cv.getBoundingClientRect();
+      cv.width=Math.max(1,Math.floor(b.width*dpr));
+      cv.height=Math.max(1,Math.floor(b.height*dpr));
+      gl.viewport(0,0,cv.width,cv.height);
+      gl.uniform2f(uR,cv.width,cv.height);
     }
+    size();
+    window.addEventListener('resize',size);
 
-    // линии
-    var gap2 = (W < 700 ? 62 : 78) * 1.45;
-    ctx.lineWidth = 1;
-    for (i = 0; i < pts.length; i++){
-      p = pts[i];
-      for (var j = i + 1; j < pts.length; j++){
-        var q = pts[j];
-        dx = p.x - q.x; dy = p.y - q.y;
-        if (dx > gap2 || dx < -gap2 || dy > gap2 || dy < -gap2) continue;
-        d = Math.sqrt(dx * dx + dy * dy);
-        if (d < gap2){
-          var a = (1 - d / gap2) * 0.30;
-          // ближе к курсору — ярче и голубее
-          var mx = (p.x + q.x) / 2 - mouse.x, my = (p.y + q.y) / 2 - mouse.y;
-          var md = Math.sqrt(mx * mx + my * my);
-          var hot = md < 260 ? (1 - md / 260) : 0;
-          ctx.strokeStyle = 'rgba(' + Math.round(47 + hot * 90) + ',' +
-                            Math.round(123 + hot * 88) + ',' +
-                            Math.round(255) + ',' + (a + hot * 0.4).toFixed(3) + ')';
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(q.x, q.y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    // узлы
-    for (i = 0; i < pts.length; i++){
-      p = pts[i];
-      dx = p.x - mouse.x; dy = p.y - mouse.y;
-      d = Math.sqrt(dx * dx + dy * dy);
-      var hot2 = d < 230 ? (1 - d / 230) : 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 1.2 + hot2 * 2.1, 0, 6.2832);
-      ctx.fillStyle = 'rgba(' + Math.round(125 + hot2 * 100) + ',211,238,' + (0.30 + hot2 * 0.7).toFixed(2) + ')';
-      ctx.fill();
-    }
-
-    raf = requestAnimationFrame(frame);
-  }
-
-  if (!reduce){
-    build();
-    frame();
-    window.addEventListener('resize', function(){ build(); });
-    window.addEventListener('mousemove', function(e){
-      var r = cv.getBoundingClientRect();
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
+    var mx=0,my=0,tx=0,ty=0;
+    window.addEventListener('mousemove',function(e){
+      tx=(e.clientX/window.innerWidth-.5)*2;
+      ty=-(e.clientY/window.innerHeight-.5)*2;
     });
-    window.addEventListener('mouseout', function(){ mouse.x = -9999; mouse.y = -9999; });
-    // не крутим анимацию, когда герой ушёл с экрана
-    var io0 = new IntersectionObserver(function(es){
-      es.forEach(function(en){
-        if (en.isIntersecting){ if (!raf) raf = requestAnimationFrame(frame); }
-        else { cancelAnimationFrame(raf); raf = null; }
-      });
-    }, {threshold: 0});
-    io0.observe(cv);
-  }
 
+    var t0=null, live=true, id=null;
+    function loop(ts){
+      if(!t0) t0=ts;
+      mx+=(tx-mx)*.05; my+=(ty-my)*.05;
+      gl.uniform2f(uM,mx,my);
+      gl.uniform1f(uT,(ts-t0)/1000);
+      gl.drawArrays(gl.TRIANGLES,0,3);
+      id=requestAnimationFrame(loop);
+    }
+    id=requestAnimationFrame(loop);
+
+    var ioGl=new IntersectionObserver(function(es){
+      es.forEach(function(en){
+        if(en.isIntersecting){ if(!id){ t0=null; id=requestAnimationFrame(loop);} }
+        else { cancelAnimationFrame(id); id=null; }
+      });
+    },{threshold:0});
+    ioGl.observe(cv);
+  })();
   /* ---------- 3. появление блоков при скролле ---------- */
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(en){
