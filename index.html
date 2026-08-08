@@ -7,356 +7,619 @@
 <meta name="description" content="Python-разработчик. Автор SaaS-платформы онлайн-записи Zapisly: FastAPI, aiogram, PostgreSQL, Docker, CI/CD. Портфолио проектов.">
 <style>
   :root{
-    --bg:#0a0a0f; --bg-card:#12121a; --bg-card-hi:#161622;
-    --border:#23233a; --border-hi:#32324f;
-    --text:#e8e8f0; --text-dim:#9a9ab0; --text-faint:#6a6a80;
-    --accent:#8b5cf6; --accent-dim:#6d3fd4; --accent-glow:rgba(139,92,246,.16);
-    --green:#34d399; --amber:#fbbf24;
+    --bg:#04060d;
+    --bg-soft:#080c16;
+    --card:#0b1020;
+    --card-hi:#0f1628;
+    --line:#182238;
+    --line-hi:#24344f;
+
+    --text:#f2f6ff;
+    --dim:#93a4c0;
+    --faint:#5d6d88;
+
+    --blue:#2f7bff;
+    --cyan:#22d3ee;
+    --ice:#7dd3fc;
+    --glow:rgba(47,123,255,.22);
+
     --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    background:var(--bg); color:var(--text);
-    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    background:var(--bg);color:var(--text);
+    font:16px/1.65 var(--sans);
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
-  body::before{
-    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:
-      radial-gradient(ellipse 70% 50% at 50% -10%, var(--accent-glow), transparent 70%),
-      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(109,63,212,.08), transparent 70%);
-  }
-  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
-  a{color:var(--accent);text-decoration:none}
+  a{color:var(--ice);text-decoration:none}
   a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.9em;color:var(--ice)}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
 
-  /* ---------- hero ---------- */
-  header{padding:88px 0 64px}
-  .eyebrow{
-    font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:20px
+  /* ══════════ HERO ══════════ */
+  .hero{
+    position:relative;min-height:100svh;display:flex;align-items:center;
+    overflow:hidden;isolation:isolate;
   }
-  h1{font-size:clamp(34px,6vw,54px);line-height:1.08;letter-spacing:-.025em;font-weight:700}
-  .tagline{font-size:clamp(17px,2.4vw,21px);color:var(--text-dim);margin-top:18px;max-width:640px}
+  #net{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block}
+  .hero::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 55% at 22% 40%, rgba(47,123,255,.20), transparent 65%),
+      radial-gradient(ellipse 45% 45% at 82% 25%, rgba(34,211,238,.13), transparent 65%),
+      linear-gradient(180deg, transparent 55%, var(--bg) 98%);
+  }
+  .hero .wrap{position:relative;z-index:2;width:100%;padding-top:80px;padding-bottom:80px}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font:600 11.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ice);padding:7px 13px;border-radius:999px;
+    border:1px solid rgba(125,211,252,.24);background:rgba(47,123,255,.07);
+    backdrop-filter:blur(6px);
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(34,211,238,.6);animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,211,238,.55)}70%{box-shadow:0 0 0 9px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
+
+  h1{
+    font-size:clamp(44px,9vw,92px);line-height:.98;letter-spacing:-.04em;font-weight:800;
+    margin-top:26px;color:#fff;text-shadow:0 0 60px rgba(47,123,255,.35);
+  }
+  h1 .l{display:inline-block;opacity:0;transform:translateY(.42em) rotate(2deg);
+    animation:rise .78s cubic-bezier(.2,.8,.25,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .role{
+    margin-top:14px;font-size:clamp(20px,3.4vw,34px);font-weight:700;letter-spacing:-.02em;
+    background:linear-gradient(100deg,var(--ice) 0%,var(--blue) 55%,#a78bfa 100%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shift 7s ease-in-out infinite;
+  }
+  @keyframes shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+  .tagline{
+    font-size:clamp(17px,2.3vw,22px);color:var(--dim);margin-top:24px;max-width:660px;
+  }
   .tagline strong{color:var(--text);font-weight:600}
-  .contacts{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+
+  .contacts{display:flex;flex-wrap:wrap;gap:11px;margin-top:36px}
   .btn{
     display:inline-flex;align-items:center;gap:8px;
-    padding:10px 18px;border-radius:9px;font-size:14px;font-weight:500;
-    border:1px solid var(--border-hi);color:var(--text);background:var(--bg-card);
-    transition:border-color .18s,background .18s,transform .18s
+    padding:12px 20px;border-radius:11px;font-size:14.5px;font-weight:600;
+    border:1px solid var(--line-hi);color:var(--text);
+    background:rgba(11,16,32,.6);backdrop-filter:blur(8px);
+    transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;
   }
-  .btn:hover{border-color:var(--accent);background:var(--bg-card-hi);text-decoration:none;transform:translateY(-1px)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn.primary:hover{background:var(--accent-dim);border-color:var(--accent-dim)}
-  .meta{margin-top:28px;font-size:14px;color:var(--text-faint)}
-  .meta span{color:var(--text-dim)}
+  .btn:hover{border-color:var(--blue);transform:translateY(-2px);text-decoration:none;
+    box-shadow:0 8px 26px -12px var(--glow)}
+  .btn.primary{
+    background:linear-gradient(100deg,var(--blue),#1e63e0);border-color:transparent;color:#fff;
+    box-shadow:0 10px 30px -14px rgba(47,123,255,.9);
+  }
+  .btn.primary:hover{filter:brightness(1.09)}
 
-  /* ---------- stats ---------- */
+  .meta{margin-top:30px;font-size:14px;color:var(--faint)}
+  .meta span{color:var(--dim)}
+
+  .scroll-cue{
+    position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
+    font:500 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+    display:flex;flex-direction:column;align-items:center;gap:9px;
+  }
+  .scroll-cue i{display:block;width:1px;height:34px;background:linear-gradient(var(--cyan),transparent);animation:cue 1.9s ease-in-out infinite}
+  @keyframes cue{0%,100%{opacity:.25;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+
+  /* ══════════ STATS ══════════ */
   .stats{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:1px;background:var(--border);border:1px solid var(--border);
-    border-radius:12px;overflow:hidden;margin:56px 0 0
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:16px;overflow:hidden;margin:44px 0 0;
   }
-  .stat{background:var(--bg-card);padding:22px 20px}
-  .stat b{display:block;font:700 27px/1 var(--mono);letter-spacing:-.02em;color:var(--text)}
-  .stat span{display:block;font-size:12.5px;color:var(--text-faint);margin-top:7px;line-height:1.4}
+  .stat{background:var(--card);padding:24px 22px;position:relative;transition:background .25s}
+  .stat:hover{background:var(--card-hi)}
+  .stat b{display:block;font:800 30px/1 var(--mono);letter-spacing:-.03em;
+    background:linear-gradient(120deg,#fff,var(--ice));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat span{display:block;font-size:12.5px;color:var(--faint);margin-top:9px;line-height:1.45}
 
-  /* ---------- sections ---------- */
-  section{padding:72px 0 0}
+  /* ══════════ SECTIONS ══════════ */
+  section{padding:88px 0 0}
   h2{
-    font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--text-faint);font-family:var(--mono);
-    padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:36px
+    display:flex;align-items:center;gap:14px;
+    font:600 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:34px;
   }
-  .about p{color:var(--text-dim);max-width:720px;margin-bottom:16px}
+  h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line-hi),transparent)}
+
+  .about p{color:var(--dim);max-width:740px;margin-bottom:16px}
   .about strong{color:var(--text);font-weight:600}
 
-  /* ---------- project cards ---------- */
+  /* reveal on scroll */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.25,1),transform .7s cubic-bezier(.2,.8,.25,1)}
+  .rv.in{opacity:1;transform:none}
+
+  /* ══════════ PROJECTS ══════════ */
   .proj{
-    border:1px solid var(--border);border-radius:14px;background:var(--bg-card);
-    padding:30px;margin-bottom:20px;transition:border-color .2s,background .2s
+    position:relative;border:1px solid var(--line);border-radius:18px;background:var(--card);
+    padding:32px;margin-bottom:22px;overflow:hidden;
+    transition:border-color .25s,background .25s,transform .25s;
   }
-  .proj:hover{border-color:var(--border-hi);background:var(--bg-card-hi)}
-  .proj.flag{border-color:var(--accent-dim);box-shadow:0 0 0 1px rgba(139,92,246,.14),0 18px 50px -28px var(--accent-glow)}
-  .p-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px}
-  .p-top h3{font-size:22px;font-weight:650;letter-spacing:-.015em}
-  .badge{
-    font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
-    padding:5px 9px;border-radius:5px;white-space:nowrap
+  .proj::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(47,123,255,.12),transparent 65%);
   }
-  .b-live{background:rgba(52,211,153,.13);color:var(--green);border:1px solid rgba(52,211,153,.28)}
-  .b-oss{background:rgba(139,92,246,.13);color:var(--accent);border:1px solid rgba(139,92,246,.3)}
-  .b-priv{background:rgba(251,191,36,.11);color:var(--amber);border:1px solid rgba(251,191,36,.26)}
-  .p-role{font-size:13px;color:var(--text-faint);font-family:var(--mono);margin-bottom:16px}
-  .p-desc{color:var(--text-dim);margin-bottom:18px}
-  .p-list{list-style:none;margin-bottom:20px}
-  .p-list li{
-    position:relative;padding-left:20px;margin-bottom:9px;font-size:14.5px;color:var(--text-dim)
+  .proj:hover{border-color:var(--line-hi);background:var(--card-hi);transform:translateY(-3px)}
+  .proj:hover::before{opacity:1}
+  .proj.flag{border-color:rgba(47,123,255,.4)}
+  .proj.flag::after{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,var(--cyan),var(--blue),transparent);
   }
-  .p-list li::before{
-    content:"";position:absolute;left:4px;top:.65em;
-    width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.65
-  }
+  .p-top{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+  .p-top h3{font-size:23px;font-weight:700;letter-spacing:-.02em}
+  .badge{font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+    padding:5px 9px;border-radius:6px;border:1px solid var(--line-hi);color:var(--faint)}
+  .b-live{color:#5eead4;border-color:rgba(94,234,212,.35);background:rgba(94,234,212,.08)}
+  .b-oss{color:var(--ice);border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.07)}
+  .p-role{font:500 13px/1.5 var(--mono);color:var(--faint);margin-top:11px}
+  .p-desc{color:var(--dim);margin-top:16px}
+  .p-list{list-style:none;margin-top:18px;display:grid;gap:9px}
+  .p-list li{position:relative;padding-left:20px;color:var(--dim);font-size:15px}
+  .p-list li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;
+    border-radius:2px;background:linear-gradient(135deg,var(--cyan),var(--blue))}
   .p-list strong{color:var(--text);font-weight:600}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
-  .tag{
-    font:11.5px/1 var(--mono);padding:5px 9px;border-radius:5px;
-    background:rgba(139,92,246,.07);border:1px solid var(--border);color:var(--text-dim)
-  }
-  .p-links{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;font-weight:500}
-  .p-links span{color:var(--text-faint);font-weight:400}
+  .hl{margin-top:22px;padding:20px;border-radius:13px;
+    background:linear-gradient(135deg,rgba(47,123,255,.09),rgba(34,211,238,.05));
+    border:1px solid rgba(47,123,255,.22)}
+  .hl h4{font-size:14.5px;font-weight:700;color:var(--ice);margin-bottom:9px}
+  .hl p{font-size:14.5px;color:var(--dim)}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:22px}
+  .tag{font:500 12px/1 var(--mono);padding:6px 10px;border-radius:7px;
+    background:rgba(24,34,56,.7);border:1px solid var(--line);color:var(--dim);
+    transition:border-color .2s,color .2s}
+  .tag:hover{border-color:var(--blue);color:var(--ice)}
+  .p-links{display:flex;flex-wrap:wrap;gap:18px;margin-top:22px;font-size:14.5px;font-weight:600}
+  .p-links span{color:var(--faint);font-weight:500}
 
-  /* ---------- highlight box ---------- */
-  .hl{
-    border-left:2px solid var(--accent);background:rgba(139,92,246,.05);
-    padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0
-  }
-  .hl h4{font-size:14px;font-weight:650;margin-bottom:8px;color:var(--text)}
-  .hl p{font-size:14px;color:var(--text-dim);margin:0}
+  /* ══════════ SKILLS ══════════ */
+  .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .sk{background:var(--card);padding:22px;transition:background .25s}
+  .sk:hover{background:var(--card-hi)}
+  .sk h4{font:600 11.5px/1 var(--mono);letter-spacing:.15em;text-transform:uppercase;
+    color:var(--ice);margin-bottom:11px}
+  .sk p{font-size:14.5px;color:var(--dim)}
 
-  /* ---------- skills ---------- */
-  .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}
-  .sk h4{
-    font:600 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:12px
-  }
-  .sk p{font-size:14.5px;color:var(--text-dim)}
+  .minor{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .mi{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:22px;
+    transition:border-color .25s}
+  .mi:hover{border-color:var(--line-hi)}
+  .mi h4{font-size:16px;font-weight:700;margin-bottom:9px}
+  .mi p{font-size:14.5px;color:var(--dim)}
 
-  /* ---------- minor list ---------- */
-  .minor{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-  .mi{border:1px solid var(--border);border-radius:10px;padding:20px;background:var(--bg-card)}
-  .mi h4{font-size:16px;font-weight:600;margin-bottom:7px}
-  .mi p{font-size:14px;color:var(--text-dim)}
+  footer{margin-top:96px;padding:32px 0 56px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    font-size:14px;color:var(--faint)}
 
-  footer{
-    margin-top:88px;padding:36px 0 56px;border-top:1px solid var(--border);
-    display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;
-    font-size:14px;color:var(--text-faint)
+  @media (max-width:640px){
+    .proj{padding:24px}
+    .hero .wrap{padding-top:64px}
+    .scroll-cue{display:none}
   }
-  @media(max-width:600px){
-    header{padding:56px 0 40px}
-    .proj{padding:24px 20px}
-    section{padding:56px 0 0}
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .rv{opacity:1;transform:none}
+    h1 .l{opacity:1;transform:none}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <div class="eyebrow">Python-разработчик · Москва</div>
-  <h1>Иван Титов</h1>
-  <p class="tagline">
-    Делаю продукты целиком — от схемы базы данных до nginx и автодеплоя.
-    Сейчас в продакшне живёт <strong>Zapisly</strong> — SaaS-платформа онлайн-записи,
-    которую я написал и поддерживаю один.
-  </p>
-  <div class="contacts">
-    <a class="btn primary" href="https://t.me/rappsix">Telegram · @rappsix</a>
-    <a class="btn" href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a>
-    <a class="btn" href="https://github.com/rappsix">GitHub</a>
-  </div>
-  <p class="meta">
-    18 лет · РАНХиГС, прикладная информатика · <span>удалённо или гибрид</span> ·
-    <span>полная или частичная занятость</span> · английский B1+
-  </p>
+<!-- ══════════ HERO ══════════ -->
+<header class="hero">
+  <canvas id="net"></canvas>
+  <div class="wrap">
+    <span class="eyebrow"><i class="dot"></i>Python-разработчик · Москва</span>
 
-  <div class="stats">
-    <div class="stat"><b>778</b><span>коммитов в Zapisly за 3 месяца</span></div>
-    <div class="stat"><b>~45k</b><span>строк Python в продакшне</span></div>
-    <div class="stat"><b>112</b><span>тестовых файлов, тесты в CI</span></div>
-    <div class="stat"><b>84</b><span>миграции базы данных</span></div>
+    <h1 id="name">Иван Титов</h1>
+    <div class="role rv">Backend на Python · продукты целиком</div>
+
+    <p class="tagline rv">
+      Делаю продукты целиком — от схемы базы данных до nginx и автодеплоя.
+      Сейчас в продакшне живёт <strong>Zapisly</strong> — SaaS-платформа онлайн-записи,
+      которую я написал и поддерживаю один.
+    </p>
+
+    <div class="contacts rv">
+      <a class="btn primary" href="https://t.me/rappsix">Telegram · @rappsix</a>
+      <a class="btn" href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a>
+      <a class="btn" href="https://github.com/rappsix">GitHub</a>
+    </div>
+
+    <p class="meta rv">
+      18 лет · РАНХиГС, прикладная информатика · <span>удалённо или гибрид</span> ·
+      <span>полная или частичная занятость</span> · английский B1+
+    </p>
   </div>
+  <div class="scroll-cue">листай<i></i></div>
 </header>
 
-<section class="about">
-  <h2>О себе</h2>
-  <p>
-    Пишу backend на Python и умею довести проект до работающего в интернете продукта:
-    спроектировать данные, подключить платежи, поднять сервер, настроить CI/CD и разобраться,
-    почему в четыре утра отвалился вебхук.
-  </p>
-  <p>
-    Большой объём в одиночку получается за счёт выстроенного <strong>AI-ассистированного
-    процесса</strong>: спецификация → план → отдельная ветка → реализация → тесты в CI →
-    автодеплой. ИИ забирает генерацию и рутинный рефакторинг; архитектурные решения, отладку
-    продакшна и разбор инцидентов оставляю за собой. Под каждый проект держу файл правил для
-    ассистента и ставлю технические предохранители — например, git-хук, который не даёт
-    случайно запушить в <code>main</code>.
-  </p>
-  <p>
-    Есть опыт коммерческой работы на заказ — сайт для сервиса 3D-печати. В команде разработки
-    пока не работал, и иду именно за этим: за код-ревью от сильных инженеров и практикой в
-    большой чужой кодовой базе.
-  </p>
-</section>
+<div class="wrap">
 
-<section>
-  <h2>Проекты</h2>
+  <div class="stats rv">
+    <div class="stat"><b data-count="778">0</b><span>коммитов в Zapisly за 3 месяца</span></div>
+    <div class="stat"><b data-count="45" data-prefix="~" data-suffix="k">0</b><span>строк Python в продакшне</span></div>
+    <div class="stat"><b data-count="112">0</b><span>тестовых файлов, тесты в CI</span></div>
+    <div class="stat"><b data-count="84">0</b><span>миграции базы данных</span></div>
+  </div>
 
-  <article class="proj flag">
-    <div class="p-top">
-      <h3>Zapisly</h3>
-      <span class="badge b-live">в продакшне</span>
-      <span class="badge b-priv">приватный репозиторий</span>
-    </div>
-    <div class="p-role">SaaS-платформа онлайн-записи · автор и единственный разработчик · май 2026 — сейчас</div>
-    <p class="p-desc">
-      Мульти-тенантная платформа для записи клиентов на услуги: Telegram-бот, REST API и
-      Telegram Mini App. Развёрнута на VPS, работает в продакшне с реальными пользователями.
+  <section class="about">
+    <h2 class="rv">О себе</h2>
+    <p class="rv">
+      Пишу backend на Python и умею довести проект до работающего в интернете продукта:
+      спроектировать данные, подключить платежи, поднять сервер, настроить CI/CD и разобраться,
+      почему в четыре утра отвалился вебхук.
     </p>
-    <ul class="p-list">
-      <li><strong>Backend:</strong> FastAPI и aiogram 3 — 39 доменных моделей, 40 сервисов бизнес-логики, около 45 000 строк Python</li>
-      <li><strong>Данные:</strong> PostgreSQL через SQLAlchemy 2 async и asyncpg, 84 миграции Alembic, Redis и Celery для фоновых задач и отложенных уведомлений</li>
-      <li><strong>Мульти-тенантность:</strong> изолированные данные бизнесов на одной платформе плюс режим собственного бота для клиента на premium-тарифе</li>
-      <li><strong>Платежи:</strong> YooKassa и интеграция с ФНС «Мой налог» — автоматические чеки для самозанятых</li>
-      <li><strong>Интеграции:</strong> двусторонняя синхронизация с Google Calendar по OAuth 2.0, генерация iCalendar-фидов, QR-коды для офлайн-точек</li>
-      <li><strong>Mini App:</strong> React 18 + Vite + Tailwind, 91 компонент — запись клиента и кабинет мастера внутри Telegram</li>
-      <li><strong>Предметная логика:</strong> расчёт свободных слотов с учётом смен и отпусков, лист ожидания, лояльность и штамп-карты, промокоды, пакеты визитов, реферальные программы, зарплаты мастеров, финансовый учёт, админ-панель с аудит-логом</li>
-      <li><strong>Качество и деплой:</strong> 112 тестовых файлов на pytest, CI поднимает реальные PostgreSQL и Redis на каждый push; деплой — push в <code>main</code> → тесты → доставка на сервер → миграции автоматом. Крон-бэкапы БД с ротацией, Sentry</li>
-    </ul>
-    <div class="hl">
-      <h4>Задача, которой я горжусь: DPI-блокировки Telegram в России</h4>
-      <p>
-        Бот терял большинство запросов к Telegram. Разобрался и починил: webhook переехал на
-        www-субдомен за Cloudflare-прокси, потому что Telegram надолго кеширует IP апекс-хоста
-        и не подхватывал смену адреса; внутри контейнера закрепил IP <code>api.telegram.org</code>,
-        так как обычный DNS отдавал IPv6 без маршрута; на исходящие запросы добавил ретраи
-        сетевых сбоёв. Бот стал работать стабильно.
+    <p class="rv">
+      Большой объём в одиночку получается за счёт выстроенного <strong>AI-ассистированного
+      процесса</strong>: спецификация → план → отдельная ветка → реализация → тесты в CI →
+      автодеплой. ИИ забирает генерацию и рутинный рефакторинг; архитектурные решения, отладку
+      продакшна и разбор инцидентов оставляю за собой. Под каждый проект держу файл правил для
+      ассистента и ставлю технические предохранители — например, git-хук, который не даёт
+      случайно запушить в <code>main</code>.
+    </p>
+    <p class="rv">
+      Есть опыт коммерческой работы на заказ — сайт для сервиса 3D-печати. В команде разработки
+      пока не работал, и иду именно за этим: за код-ревью от сильных инженеров и практикой в
+      большой чужой кодовой базе.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="rv">Проекты</h2>
+
+    <article class="proj flag rv">
+      <div class="p-top">
+        <h3>Zapisly</h3>
+        <span class="badge b-live">в продакшне</span>
+        <span class="badge">приватный репозиторий</span>
+      </div>
+      <div class="p-role">SaaS-платформа онлайн-записи · автор и единственный разработчик · май 2026 — сейчас</div>
+      <p class="p-desc">
+        Мульти-тенантная платформа для записи клиентов на услуги: Telegram-бот, REST API и
+        Telegram Mini App. Развёрнута на VPS, работает в продакшне с реальными пользователями.
       </p>
-    </div>
-    <div class="tags">
-      <span class="tag">Python 3.12</span><span class="tag">FastAPI</span><span class="tag">aiogram 3</span>
-      <span class="tag">SQLAlchemy 2 async</span><span class="tag">PostgreSQL</span><span class="tag">Redis</span>
-      <span class="tag">Celery</span><span class="tag">Alembic</span><span class="tag">React</span>
-      <span class="tag">Vite</span><span class="tag">Tailwind</span><span class="tag">Docker</span>
-      <span class="tag">nginx</span><span class="tag">GitHub Actions</span><span class="tag">Cloudflare</span>
-      <span class="tag">Sentry</span><span class="tag">pytest</span>
-    </div>
-    <div class="p-links">
-      <a href="https://app.zapis-bot.ru">Открыть продукт →</a>
-      <a href="https://t.me/ZapislyBot">Бот @ZapislyBot →</a>
-      <span>код — по запросу</span>
-    </div>
-  </article>
+      <ul class="p-list">
+        <li><strong>Backend:</strong> FastAPI и aiogram 3 — 39 доменных моделей, 40 сервисов бизнес-логики, около 45 000 строк Python</li>
+        <li><strong>Данные:</strong> PostgreSQL через SQLAlchemy 2 async и asyncpg, 84 миграции Alembic, Redis и Celery для фоновых задач и отложенных уведомлений</li>
+        <li><strong>Мульти-тенантность:</strong> изолированные данные бизнесов на одной платформе плюс режим собственного бота для клиента на premium-тарифе</li>
+        <li><strong>Платежи:</strong> YooKassa и интеграция с ФНС «Мой налог» — автоматические чеки для самозанятых</li>
+        <li><strong>Интеграции:</strong> двусторонняя синхронизация с Google Calendar по OAuth 2.0, генерация iCalendar-фидов, QR-коды для офлайн-точек</li>
+        <li><strong>Mini App:</strong> React 18 + Vite + Tailwind, 91 компонент — запись клиента и кабинет мастера внутри Telegram</li>
+        <li><strong>Предметная логика:</strong> расчёт свободных слотов с учётом смен и отпусков, лист ожидания, лояльность и штамп-карты, промокоды, пакеты визитов, реферальные программы, зарплаты мастеров, финансовый учёт, админ-панель с аудит-логом</li>
+        <li><strong>Качество и деплой:</strong> 112 тестовых файлов на pytest, CI поднимает реальные PostgreSQL и Redis на каждый push; деплой — push в <code>main</code> → тесты → доставка на сервер → миграции автоматом. Крон-бэкапы БД с ротацией, Sentry</li>
+      </ul>
+      <div class="hl">
+        <h4>Задача, которой я горжусь: DPI-блокировки Telegram в России</h4>
+        <p>
+          Бот терял большинство запросов к Telegram. Разобрался и починил: webhook переехал на
+          www-субдомен за Cloudflare-прокси, потому что Telegram надолго кеширует IP апекс-хоста
+          и не подхватывал смену адреса; внутри контейнера закрепил IP <code>api.telegram.org</code>,
+          так как обычный DNS отдавал IPv6 без маршрута; на исходящие запросы добавил ретраи
+          сетевых сбоёв. Бот стал работать стабильно.
+        </p>
+      </div>
+      <div class="tags">
+        <span class="tag">Python 3.12</span><span class="tag">FastAPI</span><span class="tag">aiogram 3</span>
+        <span class="tag">SQLAlchemy 2 async</span><span class="tag">PostgreSQL</span><span class="tag">Redis</span>
+        <span class="tag">Celery</span><span class="tag">Alembic</span><span class="tag">React</span>
+        <span class="tag">Vite</span><span class="tag">Tailwind</span><span class="tag">Docker</span>
+        <span class="tag">nginx</span><span class="tag">GitHub Actions</span><span class="tag">Cloudflare</span>
+        <span class="tag">Sentry</span><span class="tag">pytest</span>
+      </div>
+      <div class="p-links">
+        <a href="https://app.zapis-bot.ru">Открыть продукт →</a>
+        <a href="https://t.me/ZapislyBot">Бот @ZapislyBot →</a>
+        <span>код — по запросу</span>
+      </div>
+    </article>
 
-  <article class="proj">
-    <div class="p-top">
-      <h3>3D Marketplace</h3>
-      <span class="badge b-priv">приватный репозиторий</span>
-    </div>
-    <div class="p-role">Маркетплейс моделей для 3D-печати · fullstack · апрель 2026</div>
-    <p class="p-desc">
-      Площадка для публикации и продажи STL-моделей с просмотром прямо в браузере.
-    </p>
-    <ul class="p-list">
-      <li>Backend на FastAPI и SQLAlchemy async, авторизация на JWT, Celery для обработки загруженных файлов</li>
-      <li>Просмотр STL-моделей в браузере на <strong>Three.js и React Three Fiber</strong>, загрузка drag-n-drop</li>
-      <li>Next.js 14 с TanStack Query и Zustand, двуязычный интерфейс RU/EN на i18next</li>
-      <li>End-to-end тесты на Playwright, включая отдельный аудит 3D-вьюера и превью моделей</li>
-      <li>Юридическая база площадки: пользовательское соглашение, политика конфиденциальности, DMCA-политика и форма жалобы на двух языках</li>
-      <li>Развёртывание: Docker Compose, nginx, скрипт деплоя со сборкой на локальной машине</li>
-    </ul>
-    <div class="tags">
-      <span class="tag">FastAPI</span><span class="tag">PostgreSQL</span><span class="tag">Celery</span>
-      <span class="tag">JWT</span><span class="tag">Next.js 14</span><span class="tag">TypeScript</span>
-      <span class="tag">Three.js</span><span class="tag">Playwright</span><span class="tag">Docker</span>
-    </div>
-    <div class="p-links"><span>код — по запросу</span></div>
-  </article>
+    <article class="proj rv">
+      <div class="p-top">
+        <h3>3D Marketplace</h3>
+        <span class="badge">приватный репозиторий</span>
+      </div>
+      <div class="p-role">Маркетплейс моделей для 3D-печати · fullstack · апрель 2026</div>
+      <p class="p-desc">
+        Площадка для публикации и продажи STL-моделей с просмотром прямо в браузере.
+      </p>
+      <ul class="p-list">
+        <li>Backend на FastAPI и SQLAlchemy async, авторизация на JWT, Celery для обработки загруженных файлов</li>
+        <li>Просмотр STL-моделей в браузере на <strong>Three.js и React Three Fiber</strong>, загрузка drag-n-drop</li>
+        <li>Next.js 14 с TanStack Query и Zustand, двуязычный интерфейс RU/EN на i18next</li>
+        <li>End-to-end тесты на Playwright, включая отдельный аудит 3D-вьюера и превью моделей</li>
+        <li>Юридическая база площадки: пользовательское соглашение, политика конфиденциальности, DMCA-политика и форма жалобы на двух языках</li>
+        <li>Развёртывание: Docker Compose, nginx, скрипт деплоя со сборкой на локальной машине</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">FastAPI</span><span class="tag">PostgreSQL</span><span class="tag">Celery</span>
+        <span class="tag">JWT</span><span class="tag">Next.js 14</span><span class="tag">TypeScript</span>
+        <span class="tag">Three.js</span><span class="tag">Playwright</span><span class="tag">Docker</span>
+      </div>
+      <div class="p-links"><span>код — по запросу</span></div>
+    </article>
 
-  <article class="proj">
-    <div class="p-top">
-      <h3>Scan &amp; Print</h3>
-      <span class="badge b-priv">приватный репозиторий</span>
-    </div>
-    <div class="p-role">Корпоративный сайт сервиса 3D-печати · frontend · коммерческий заказ · апрель — май 2026</div>
-    <p class="p-desc">
-      Сайт для действующей компании 3D-печати и сканирования (Пенза, на рынке с 2018 года):
-      каталог услуг, портфолио работ, блог, приём заявок. Работа по заказу клиента.
-      95 коммитов, около 5 000 строк TypeScript.
-    </p>
-    <ul class="p-list">
-      <li><strong>Next.js 16 и React 19</strong> на TypeScript, стилизация на Tailwind CSS 4</li>
-      <li>Динамические маршруты для услуг, кейсов портфолио и статей блога</li>
-      <li>3D-элементы на Three.js и React Three Fiber, анимации на GSAP и Motion</li>
-      <li>Форма заявки: React Hook Form с валидацией через Zod, отправка письма через nodemailer</li>
-      <li>SEO: программная генерация <code>sitemap.xml</code> и <code>robots.txt</code>, микроразметка FAQ</li>
-    </ul>
-    <div class="tags">
-      <span class="tag">Next.js 16</span><span class="tag">React 19</span><span class="tag">TypeScript</span>
-      <span class="tag">Tailwind 4</span><span class="tag">Three.js</span><span class="tag">GSAP</span><span class="tag">Zod</span>
-    </div>
-    <div class="p-links"><span>код — по запросу</span></div>
-  </article>
+    <article class="proj rv">
+      <div class="p-top">
+        <h3>Scan &amp; Print</h3>
+        <span class="badge">приватный репозиторий</span>
+      </div>
+      <div class="p-role">Корпоративный сайт сервиса 3D-печати · frontend · коммерческий заказ · апрель — май 2026</div>
+      <p class="p-desc">
+        Сайт для действующей компании 3D-печати и сканирования (Пенза, на рынке с 2018 года):
+        каталог услуг, портфолио работ, блог, приём заявок. Работа по заказу клиента.
+        95 коммитов, около 5 000 строк TypeScript.
+      </p>
+      <ul class="p-list">
+        <li><strong>Next.js 16 и React 19</strong> на TypeScript, стилизация на Tailwind CSS 4</li>
+        <li>Динамические маршруты для услуг, кейсов портфолио и статей блога</li>
+        <li>3D-элементы на Three.js и React Three Fiber, анимации на GSAP и Motion</li>
+        <li>Форма заявки: React Hook Form с валидацией через Zod, отправка письма через nodemailer</li>
+        <li>SEO: программная генерация <code>sitemap.xml</code> и <code>robots.txt</code>, микроразметка FAQ</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">Next.js 16</span><span class="tag">React 19</span><span class="tag">TypeScript</span>
+        <span class="tag">Tailwind 4</span><span class="tag">Three.js</span><span class="tag">GSAP</span><span class="tag">Zod</span>
+      </div>
+      <div class="p-links"><span>код — по запросу</span></div>
+    </article>
 
-  <article class="proj">
-    <div class="p-top">
-      <h3>Music Player</h3>
-      <span class="badge b-oss">открытый код</span>
-    </div>
-    <div class="p-role">Десктопный аудиоплеер · Python и PySide6 · июнь 2026</div>
-    <p class="p-desc">
-      Плеер на 5 500 строк с честной архитектурой MVVM — модели, сервисы, viewmodel'ы и
-      представления разделены, а не свалены в один файл.
-    </p>
-    <ul class="p-list">
-      <li>Локальная библиотека: сканирование папок, чтение метаданных через mutagen, обложки альбомов</li>
-      <li>Интеграция с Яндекс.Музыкой по OAuth (device code flow)</li>
-      <li>Интернет-радио с каталогом станций, плейлисты, очередь воспроизведения</li>
-      <li>Поиск по мере набора, режимы повтора и перемешивания, светлая и тёмная темы</li>
-      <li>GitHub Actions собирает бандл PyInstaller и <strong>установщик для Windows</strong> через Inno Setup</li>
-    </ul>
-    <div class="tags">
-      <span class="tag">Python</span><span class="tag">PySide6</span><span class="tag">mutagen</span>
-      <span class="tag">PyInstaller</span><span class="tag">Inno Setup</span><span class="tag">GitHub Actions</span>
-    </div>
-    <div class="p-links">
-      <a href="https://github.com/rappsix/music_player">Код на GitHub →</a>
-    </div>
-  </article>
-</section>
+    <article class="proj rv">
+      <div class="p-top">
+        <h3>Music Player</h3>
+        <span class="badge b-oss">открытый код</span>
+      </div>
+      <div class="p-role">Десктопный аудиоплеер · Python и PySide6 · июнь 2026</div>
+      <p class="p-desc">
+        Плеер на 5 500 строк с честной архитектурой MVVM — модели, сервисы, viewmodel'ы и
+        представления разделены, а не свалены в один файл.
+      </p>
+      <ul class="p-list">
+        <li>Локальная библиотека: сканирование папок, чтение метаданных через mutagen, обложки альбомов</li>
+        <li>Интеграция с Яндекс.Музыкой по OAuth (device code flow)</li>
+        <li>Интернет-радио с каталогом станций, плейлисты, очередь воспроизведения</li>
+        <li>Поиск по мере набора, режимы повтора и перемешивания, светлая и тёмная темы</li>
+        <li>GitHub Actions собирает бандл PyInstaller и <strong>установщик для Windows</strong> через Inno Setup</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">Python</span><span class="tag">PySide6</span><span class="tag">mutagen</span>
+        <span class="tag">PyInstaller</span><span class="tag">Inno Setup</span><span class="tag">GitHub Actions</span>
+      </div>
+      <div class="p-links">
+        <a href="https://github.com/rappsix/music_player">Код на GitHub →</a>
+      </div>
+    </article>
+  </section>
 
-<section>
-  <h2>Навыки</h2>
-  <div class="skills">
-    <div class="sk"><h4>Языки</h4><p>Python, TypeScript, JavaScript, SQL, Java (базово)</p></div>
-    <div class="sk"><h4>Backend</h4><p>FastAPI, aiogram 3, SQLAlchemy 2 (async), Alembic, Celery, Pydantic</p></div>
-    <div class="sk"><h4>Базы данных</h4><p>PostgreSQL (asyncpg), Redis, SQLite</p></div>
-    <div class="sk"><h4>Frontend</h4><p>React 18/19, Next.js 14–16, Vite, Tailwind CSS, Three.js / React Three Fiber, React Hook Form + Zod, TanStack Query, Zustand</p></div>
-    <div class="sk"><h4>Инфраструктура</h4><p>Docker, Docker Compose, nginx, GitHub Actions, Linux VPS, Cloudflare, Let's Encrypt, Sentry</p></div>
-    <div class="sk"><h4>Тестирование</h4><p>pytest, pytest-asyncio, Playwright</p></div>
-    <div class="sk"><h4>Интеграции</h4><p>Telegram Bot API и WebApp, YooKassa, ФНС «Мой налог», Google Calendar API + OAuth 2.0, iCalendar</p></div>
-    <div class="sk"><h4>Инструменты</h4><p>Git, Claude Code, Cursor, GitHub Copilot</p></div>
-  </div>
-</section>
-
-<section>
-  <h2>Ещё из практики</h2>
-  <div class="minor">
-    <div class="mi">
-      <h4>Fabric-мод на Java 17</h4>
-      <p>Анализ рыночных данных игрового аукциона: накопление статистики цен, торговая логика,
-      режим «сухого прогона» для безопасной обкатки. Gradle, около 3 000 строк.</p>
+  <section>
+    <h2 class="rv">Навыки</h2>
+    <div class="skills rv">
+      <div class="sk"><h4>Языки</h4><p>Python, TypeScript, JavaScript, SQL, Java (базово)</p></div>
+      <div class="sk"><h4>Backend</h4><p>FastAPI, aiogram 3, SQLAlchemy 2 (async), Alembic, Celery, Pydantic</p></div>
+      <div class="sk"><h4>Базы данных</h4><p>PostgreSQL (asyncpg), Redis, SQLite</p></div>
+      <div class="sk"><h4>Frontend</h4><p>React 18/19, Next.js 14–16, Vite, Tailwind CSS, Three.js / React Three Fiber, React Hook Form + Zod, TanStack Query, Zustand</p></div>
+      <div class="sk"><h4>Инфраструктура</h4><p>Docker, Docker Compose, nginx, GitHub Actions, Linux VPS, Cloudflare, Let's Encrypt, Sentry</p></div>
+      <div class="sk"><h4>Тестирование</h4><p>pytest, pytest-asyncio, Playwright</p></div>
+      <div class="sk"><h4>Интеграции</h4><p>Telegram Bot API и WebApp, YooKassa, ФНС «Мой налог», Google Calendar API + OAuth 2.0, iCalendar</p></div>
+      <div class="sk"><h4>Инструменты</h4><p>Git, Claude Code, Cursor, GitHub Copilot</p></div>
     </div>
-    <div class="mi">
-      <h4>Парсеры организаций из 2GIS</h4>
-      <p>Сбор данных по региону на Python, дедупликация записей, выгрузка результатов в Excel.</p>
+  </section>
+
+  <section>
+    <h2 class="rv">Ещё из практики</h2>
+    <div class="minor rv">
+      <div class="mi">
+        <h4>Fabric-мод на Java 17</h4>
+        <p>Анализ рыночных данных игрового аукциона: накопление статистики цен, торговая логика,
+        режим «сухого прогона» для безопасной обкатки. Gradle, около 3 000 строк.</p>
+      </div>
+      <div class="mi">
+        <h4>Парсеры организаций из 2GIS</h4>
+        <p>Сбор данных по региону на Python, дедупликация записей, выгрузка результатов в Excel.</p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <div>Иван Титов · Москва · 2026</div>
-  <div>
-    <a href="https://t.me/rappsix">@rappsix</a> ·
-    <a href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a> ·
-    <a href="https://github.com/rappsix">GitHub</a>
-  </div>
-</footer>
-
+  <footer>
+    <div>Иван Титов · Москва · 2026</div>
+    <div>
+      <a href="https://t.me/rappsix">@rappsix</a> ·
+      <a href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a> ·
+      <a href="https://github.com/rappsix">GitHub</a>
+    </div>
+  </footer>
 </div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- 1. буквы имени появляются по очереди ---------- */
+  var h1 = document.getElementById('name');
+  var txt = h1.textContent.trim();
+  h1.textContent = '';
+  for (var i = 0; i < txt.length; i++){
+    var s = document.createElement('span');
+    s.className = 'l';
+    if (txt[i] === ' '){ s.innerHTML = '&nbsp;'; } else { s.textContent = txt[i]; }
+    s.style.animationDelay = (0.14 + i * 0.045) + 's';
+    h1.appendChild(s);
+  }
+
+  /* ---------- 2. фон: сеть узлов + курсор ---------- */
+  var cv = document.getElementById('net');
+  var ctx = cv.getContext('2d');
+  var W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var pts = [], mouse = {x: -9999, y: -9999}, t = 0, raf;
+
+  function build(){
+    var r = cv.getBoundingClientRect();
+    W = r.width; H = r.height;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    var gap = W < 700 ? 62 : 78;
+    var cols = Math.ceil(W / gap) + 2;
+    var rows = Math.ceil(H / gap) + 2;
+    pts = [];
+    for (var y = 0; y < rows; y++){
+      for (var x = 0; x < cols; x++){
+        pts.push({
+          ox: (x - 0.5) * gap,
+          oy: (y - 0.5) * gap,
+          x: 0, y: 0,
+          ph: (x * 0.6 + y * 0.9)
+        });
+      }
+    }
+  }
+
+  function frame(){
+    t += 0.006;
+    ctx.clearRect(0, 0, W, H);
+
+    var i, p, dx, dy, d;
+    for (i = 0; i < pts.length; i++){
+      p = pts[i];
+      // мягкая волна
+      p.x = p.ox + Math.sin(t * 1.4 + p.ph) * 9;
+      p.y = p.oy + Math.cos(t * 1.1 + p.ph * 0.7) * 9;
+      // отталкивание от курсора
+      dx = p.x - mouse.x; dy = p.y - mouse.y;
+      d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 170 && d > 0.01){
+        var f = (170 - d) / 170;
+        p.x += (dx / d) * f * 34;
+        p.y += (dy / d) * f * 34;
+      }
+    }
+
+    // линии
+    var gap2 = (W < 700 ? 62 : 78) * 1.45;
+    ctx.lineWidth = 1;
+    for (i = 0; i < pts.length; i++){
+      p = pts[i];
+      for (var j = i + 1; j < pts.length; j++){
+        var q = pts[j];
+        dx = p.x - q.x; dy = p.y - q.y;
+        if (dx > gap2 || dx < -gap2 || dy > gap2 || dy < -gap2) continue;
+        d = Math.sqrt(dx * dx + dy * dy);
+        if (d < gap2){
+          var a = (1 - d / gap2) * 0.30;
+          // ближе к курсору — ярче и голубее
+          var mx = (p.x + q.x) / 2 - mouse.x, my = (p.y + q.y) / 2 - mouse.y;
+          var md = Math.sqrt(mx * mx + my * my);
+          var hot = md < 260 ? (1 - md / 260) : 0;
+          ctx.strokeStyle = 'rgba(' + Math.round(47 + hot * 90) + ',' +
+                            Math.round(123 + hot * 88) + ',' +
+                            Math.round(255) + ',' + (a + hot * 0.4).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // узлы
+    for (i = 0; i < pts.length; i++){
+      p = pts[i];
+      dx = p.x - mouse.x; dy = p.y - mouse.y;
+      d = Math.sqrt(dx * dx + dy * dy);
+      var hot2 = d < 230 ? (1 - d / 230) : 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.2 + hot2 * 2.1, 0, 6.2832);
+      ctx.fillStyle = 'rgba(' + Math.round(125 + hot2 * 100) + ',211,238,' + (0.30 + hot2 * 0.7).toFixed(2) + ')';
+      ctx.fill();
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  if (!reduce){
+    build();
+    frame();
+    window.addEventListener('resize', function(){ build(); });
+    window.addEventListener('mousemove', function(e){
+      var r = cv.getBoundingClientRect();
+      mouse.x = e.clientX - r.left;
+      mouse.y = e.clientY - r.top;
+    });
+    window.addEventListener('mouseout', function(){ mouse.x = -9999; mouse.y = -9999; });
+    // не крутим анимацию, когда герой ушёл с экрана
+    var io0 = new IntersectionObserver(function(es){
+      es.forEach(function(en){
+        if (en.isIntersecting){ if (!raf) raf = requestAnimationFrame(frame); }
+        else { cancelAnimationFrame(raf); raf = null; }
+      });
+    }, {threshold: 0});
+    io0.observe(cv);
+  }
+
+  /* ---------- 3. появление блоков при скролле ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      }
+    });
+  }, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+
+  var rvs = document.querySelectorAll('.rv');
+  for (var k = 0; k < rvs.length; k++){
+    rvs[k].style.transitionDelay = (Math.min(k, 3) * 0.06) + 's';
+    io.observe(rvs[k]);
+  }
+
+  /* ---------- 4. счётчики ---------- */
+  var counters = document.querySelectorAll('[data-count]');
+  var io2 = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (!en.isIntersecting) return;
+      var el = en.target;
+      io2.unobserve(el);
+      var end = parseInt(el.getAttribute('data-count'), 10);
+      var pre = el.getAttribute('data-prefix') || '';
+      var suf = el.getAttribute('data-suffix') || '';
+      if (reduce){ el.textContent = pre + end + suf; return; }
+      var st = null, dur = 1100;
+      function step(ts){
+        if (!st) st = ts;
+        var p = Math.min((ts - st) / dur, 1);
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = pre + Math.round(end * e) + suf;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }, {threshold: 0.4});
+  for (var m = 0; m < counters.length; m++) io2.observe(counters[m]);
+
+  /* ---------- 5. подсветка карточки под курсором ---------- */
+  var projs = document.querySelectorAll('.proj');
+  for (var n = 0; n < projs.length; n++){
+    (function(card){
+      card.addEventListener('mousemove', function(e){
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    })(projs[n]);
+  }
+})();
+</script>
 </body>
 </html>
