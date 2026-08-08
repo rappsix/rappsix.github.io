@@ -645,13 +645,13 @@
     part({g:box(1.0,.12,.72),  c:CHAIR, m:function(){return mTrans(0,.10,-.72);}});
 
     // ноутбук
-    part({g:box(1.22,.05,.80), c:LAP, m:function(){return mTrans(0,.09,.12);}});
-    part({g:box(1.22,.75,.04), c:LAP, m:function(){return mMul(mTrans(0,.42,-.20), mRotX(-.30));}});
-    part({g:box(1.10,.63,.01), c:SCREEN, glow:true,
-          m:function(){return mMul(mTrans(0,.42,-.232), mRotX(-.30));}});
+    part({g:box(1.18,.05,.72), c:LAP, m:function(){return mTrans(0,.09,-.26);}});
+    part({g:box(1.18,.72,.04), c:LAP, m:function(){return mMul(mTrans(0,.40,.16), mRotX(.32));}});
+    part({g:box(1.06,.045,.03), c:SCREEN, glow:true,
+          m:function(){return mTrans(0,.125,.055);}});
 
     // кружка
-    part({g:cyl(.13,.24,10), c:CUP, m:function(){return mTrans(-1.02,.17,.30);}});
+    part({g:cyl(.13,.24,10), c:CUP, m:function(){return mTrans(1.00,.17,.26);}});
 
     // тело
     part({g:box(.92,1.02,.56), c:HOOD, m:function(s){return mMul(mTrans(0,.70,-.62), mRotX(-s.lean*.30));}});
@@ -678,7 +678,7 @@
           return mMul(mMul(b,r), mTrans(0,-.66,0));
         }
         var ty = .30 + Math.sin(s.t*11 + (side>0?1.7:0))*.028*(1-s.wave);
-        return mTrans(side*.30, ty - s.lean*.10, .18 - s.lean*.30);
+        return mTrans(side*.28, ty - s.lean*.10, -.22 - s.lean*.26);
       }});
     }
     arm(-1); arm(1);
@@ -686,8 +686,8 @@
     // голова
     function headM(s){
       return mMul(
-        mMul(mTrans(0, 1.52 - s.lean*.10, -.60 + s.lean*.16), mRotX(-s.lean*.34 + s.my*.12)),
-        mRotY(s.mx*.42)
+        mMul(mTrans(0, 1.52 - s.lean*.10, -.60 + s.lean*.16), mRotX(-s.lean*.34 + s.my*.10)),
+        mRotY(s.mx*.30)
       );
     }
     part({g:box(.60,.62,.58), c:SKIN, m:headM});
@@ -695,9 +695,9 @@
     part({g:box(.64,.30,.10), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.14,-.28));}});
     // глаза
     part({g:box(.09,.11,.04), c:'#101828', m:function(s){
-      return mMul(mMul(headM(s), mTrans(-.15,.03,.30)), mScale(1,s.blink,1));}});
+      return mMul(mMul(headM(s), mTrans(-.14,.03,.291)), mScale(1,s.blink,1));}});
     part({g:box(.09,.11,.04), c:'#101828', m:function(s){
-      return mMul(mMul(headM(s), mTrans(.15,.03,.30)), mScale(1,s.blink,1));}});
+      return mMul(mMul(headM(s), mTrans(.14,.03,.291)), mScale(1,s.blink,1));}});
 
     /* ---- камера ---- */
     var CAM=[.48,1.42,3.30], LOOK=[0,1.00,-.22];
@@ -726,7 +726,7 @@
       var d=p[2];
       if(d<0.05) d=0.05;
       var f=SC/d;
-      return [W/2 + p[0]*f, H*0.58 - p[1]*f, d];
+      return [W/2 - p[0]*f, H*0.58 - p[1]*f, d];
     }
 
     var LIG=(function(){var v=[-.42,.80,.62],l=Math.hypot(v[0],v[1],v[2]);return [v[0]/l,v[1]/l,v[2]/l];})();
@@ -767,8 +767,8 @@
 
       // свечение от экрана
       var gsz=Math.min(W,H)*0.5;
-      var gr=ctx.createRadialGradient(W/2,H*0.50,0,W/2,H*0.50,gsz);
-      gr.addColorStop(0,'rgba(60,190,255,.20)');
+      var gr=ctx.createRadialGradient(W/2,H*0.60,0,W/2,H*0.60,gsz);
+      gr.addColorStop(0,'rgba(70,200,255,.30)');
       gr.addColorStop(1,'rgba(60,190,255,0)');
       ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
 
@@ -779,15 +779,15 @@
         var vw=new Array(g.v.length);
         for(var k=0;k<g.v.length;k++) vw[k]=view(xf(M,g.v[k]));
         for(var fi=0;fi<g.f.length;fi++){
-          var idx=g.f[fi], pts=[], zs=0;
-          for(var q=0;q<idx.length;q++){ pts.push(proj(vw[idx[q]])); zs+=vw[idx[q]][2]; }
+          var idx=g.f[fi], pts=[], zs=0, zmax=-1e9;
+          for(var q=0;q<idx.length;q++){ pts.push(proj(vw[idx[q]])); zs+=vw[idx[q]][2]; if(vw[idx[q]][2]>zmax) zmax=vw[idx[q]][2]; }
           // back-face cull по знаковой площади в экранных координатах
           var area=0;
           for(var a1=0;a1<pts.length;a1++){
             var b1=(a1+1)%pts.length;
             area += pts[a1][0]*pts[b1][1] - pts[b1][0]*pts[a1][1];
           }
-          if(area>=0) continue;
+          if(area<=0) continue;
           // нормаль в мире для освещения
           var A=xf(M,g.v[idx[0]]), B=xf(M,g.v[idx[1]]), C=xf(M,g.v[idx[2]]);
           var u=[B[0]-A[0],B[1]-A[1],B[2]-A[2]], w2=[C[0]-A[0],C[1]-A[1],C[2]-A[2]];
@@ -797,7 +797,7 @@
           var k2 = o.glow ? 1.3 : (0.46 + 0.72*dif);
           // подсветка от экрана: грани, смотрящие на ноутбук
           var rim = o.glow ? 0 : Math.max(0, nz*0.62 + ny*0.16) * 0.55;
-          polys.push({p:pts, z:zs/idx.length, col:tint(o.c,k2,rim), glow:o.glow});
+          polys.push({p:pts, z:zmax*0.72 + (zs/idx.length)*0.28, col:tint(o.c,k2,rim), glow:o.glow});
         }
       }
       polys.sort(function(a,b){return b.z-a.z;});
