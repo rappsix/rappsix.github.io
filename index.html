@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Иван Титов — Python-разработчик</title>
+<meta name="description" content="Python-разработчик. Автор SaaS-платформы онлайн-записи Zapisly: FastAPI, aiogram, PostgreSQL, Docker, CI/CD. Портфолио проектов.">
+<style>
+  :root{
+    --bg:#0a0a0f; --bg-card:#12121a; --bg-card-hi:#161622;
+    --border:#23233a; --border-hi:#32324f;
+    --text:#e8e8f0; --text-dim:#9a9ab0; --text-faint:#6a6a80;
+    --accent:#8b5cf6; --accent-dim:#6d3fd4; --accent-glow:rgba(139,92,246,.16);
+    --green:#34d399; --amber:#fbbf24;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--text);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% -10%, var(--accent-glow), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(109,63,212,.08), transparent 70%);
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---------- hero ---------- */
+  header{padding:88px 0 64px}
+  .eyebrow{
+    font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:20px
+  }
+  h1{font-size:clamp(34px,6vw,54px);line-height:1.08;letter-spacing:-.025em;font-weight:700}
+  .tagline{font-size:clamp(17px,2.4vw,21px);color:var(--text-dim);margin-top:18px;max-width:640px}
+  .tagline strong{color:var(--text);font-weight:600}
+  .contacts{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 18px;border-radius:9px;font-size:14px;font-weight:500;
+    border:1px solid var(--border-hi);color:var(--text);background:var(--bg-card);
+    transition:border-color .18s,background .18s,transform .18s
+  }
+  .btn:hover{border-color:var(--accent);background:var(--bg-card-hi);text-decoration:none;transform:translateY(-1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-dim);border-color:var(--accent-dim)}
+  .meta{margin-top:28px;font-size:14px;color:var(--text-faint)}
+  .meta span{color:var(--text-dim)}
+
+  /* ---------- stats ---------- */
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:1px;background:var(--border);border:1px solid var(--border);
+    border-radius:12px;overflow:hidden;margin:56px 0 0
+  }
+  .stat{background:var(--bg-card);padding:22px 20px}
+  .stat b{display:block;font:700 27px/1 var(--mono);letter-spacing:-.02em;color:var(--text)}
+  .stat span{display:block;font-size:12.5px;color:var(--text-faint);margin-top:7px;line-height:1.4}
+
+  /* ---------- sections ---------- */
+  section{padding:72px 0 0}
+  h2{
+    font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--text-faint);font-family:var(--mono);
+    padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:36px
+  }
+  .about p{color:var(--text-dim);max-width:720px;margin-bottom:16px}
+  .about strong{color:var(--text);font-weight:600}
+
+  /* ---------- project cards ---------- */
+  .proj{
+    border:1px solid var(--border);border-radius:14px;background:var(--bg-card);
+    padding:30px;margin-bottom:20px;transition:border-color .2s,background .2s
+  }
+  .proj:hover{border-color:var(--border-hi);background:var(--bg-card-hi)}
+  .proj.flag{border-color:var(--accent-dim);box-shadow:0 0 0 1px rgba(139,92,246,.14),0 18px 50px -28px var(--accent-glow)}
+  .p-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px}
+  .p-top h3{font-size:22px;font-weight:650;letter-spacing:-.015em}
+  .badge{
+    font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+    padding:5px 9px;border-radius:5px;white-space:nowrap
+  }
+  .b-live{background:rgba(52,211,153,.13);color:var(--green);border:1px solid rgba(52,211,153,.28)}
+  .b-oss{background:rgba(139,92,246,.13);color:var(--accent);border:1px solid rgba(139,92,246,.3)}
+  .b-priv{background:rgba(251,191,36,.11);color:var(--amber);border:1px solid rgba(251,191,36,.26)}
+  .p-role{font-size:13px;color:var(--text-faint);font-family:var(--mono);margin-bottom:16px}
+  .p-desc{color:var(--text-dim);margin-bottom:18px}
+  .p-list{list-style:none;margin-bottom:20px}
+  .p-list li{
+    position:relative;padding-left:20px;margin-bottom:9px;font-size:14.5px;color:var(--text-dim)
+  }
+  .p-list li::before{
+    content:"";position:absolute;left:4px;top:.65em;
+    width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.65
+  }
+  .p-list strong{color:var(--text);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .tag{
+    font:11.5px/1 var(--mono);padding:5px 9px;border-radius:5px;
+    background:rgba(139,92,246,.07);border:1px solid var(--border);color:var(--text-dim)
+  }
+  .p-links{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;font-weight:500}
+  .p-links span{color:var(--text-faint);font-weight:400}
+
+  /* ---------- highlight box ---------- */
+  .hl{
+    border-left:2px solid var(--accent);background:rgba(139,92,246,.05);
+    padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0
+  }
+  .hl h4{font-size:14px;font-weight:650;margin-bottom:8px;color:var(--text)}
+  .hl p{font-size:14px;color:var(--text-dim);margin:0}
+
+  /* ---------- skills ---------- */
+  .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}
+  .sk h4{
+    font:600 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:12px
+  }
+  .sk p{font-size:14.5px;color:var(--text-dim)}
+
+  /* ---------- minor list ---------- */
+  .minor{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .mi{border:1px solid var(--border);border-radius:10px;padding:20px;background:var(--bg-card)}
+  .mi h4{font-size:16px;font-weight:600;margin-bottom:7px}
+  .mi p{font-size:14px;color:var(--text-dim)}
+
+  footer{
+    margin-top:88px;padding:36px 0 56px;border-top:1px solid var(--border);
+    display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;
+    font-size:14px;color:var(--text-faint)
+  }
+  @media(max-width:600px){
+    header{padding:56px 0 40px}
+    .proj{padding:24px 20px}
+    section{padding:56px 0 0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Python-разработчик · Москва</div>
+  <h1>Иван Титов</h1>
+  <p class="tagline">
+    Делаю продукты целиком — от схемы базы данных до nginx и автодеплоя.
+    Сейчас в продакшне живёт <strong>Zapisly</strong> — SaaS-платформа онлайн-записи,
+    которую я написал и поддерживаю один.
+  </p>
+  <div class="contacts">
+    <a class="btn primary" href="https://t.me/rappsix">Telegram · @rappsix</a>
+    <a class="btn" href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a>
+    <a class="btn" href="https://github.com/rappsix">GitHub</a>
+  </div>
+  <p class="meta">
+    18 лет · РАНХиГС, прикладная информатика · <span>удалённо или гибрид</span> ·
+    <span>полная или частичная занятость</span> · английский B1+
+  </p>
+
+  <div class="stats">
+    <div class="stat"><b>778</b><span>коммитов в Zapisly за 3 месяца</span></div>
+    <div class="stat"><b>~45k</b><span>строк Python в продакшне</span></div>
+    <div class="stat"><b>112</b><span>тестовых файлов, тесты в CI</span></div>
+    <div class="stat"><b>84</b><span>миграции базы данных</span></div>
+  </div>
+</header>
+
+<section class="about">
+  <h2>О себе</h2>
+  <p>
+    Пишу backend на Python и умею довести проект до работающего в интернете продукта:
+    спроектировать данные, подключить платежи, поднять сервер, настроить CI/CD и разобраться,
+    почему в четыре утра отвалился вебхук.
+  </p>
+  <p>
+    Большой объём в одиночку получается за счёт выстроенного <strong>AI-ассистированного
+    процесса</strong>: спецификация → план → отдельная ветка → реализация → тесты в CI →
+    автодеплой. ИИ забирает генерацию и рутинный рефакторинг; архитектурные решения, отладку
+    продакшна и разбор инцидентов оставляю за собой. Под каждый проект держу файл правил для
+    ассистента и ставлю технические предохранители — например, git-хук, который не даёт
+    случайно запушить в <code>main</code>.
+  </p>
+  <p>
+    Есть опыт коммерческой работы на заказ — сайт для сервиса 3D-печати. В команде разработки
+    пока не работал, и иду именно за этим: за код-ревью от сильных инженеров и практикой в
+    большой чужой кодовой базе.
+  </p>
+</section>
+
+<section>
+  <h2>Проекты</h2>
+
+  <article class="proj flag">
+    <div class="p-top">
+      <h3>Zapisly</h3>
+      <span class="badge b-live">в продакшне</span>
+      <span class="badge b-priv">приватный репозиторий</span>
+    </div>
+    <div class="p-role">SaaS-платформа онлайн-записи · автор и единственный разработчик · май 2026 — сейчас</div>
+    <p class="p-desc">
+      Мульти-тенантная платформа для записи клиентов на услуги: Telegram-бот, REST API и
+      Telegram Mini App. Развёрнута на VPS, работает в продакшне с реальными пользователями.
+    </p>
+    <ul class="p-list">
+      <li><strong>Backend:</strong> FastAPI и aiogram 3 — 39 доменных моделей, 40 сервисов бизнес-логики, около 45 000 строк Python</li>
+      <li><strong>Данные:</strong> PostgreSQL через SQLAlchemy 2 async и asyncpg, 84 миграции Alembic, Redis и Celery для фоновых задач и отложенных уведомлений</li>
+      <li><strong>Мульти-тенантность:</strong> изолированные данные бизнесов на одной платформе плюс режим собственного бота для клиента на premium-тарифе</li>
+      <li><strong>Платежи:</strong> YooKassa и интеграция с ФНС «Мой налог» — автоматические чеки для самозанятых</li>
+      <li><strong>Интеграции:</strong> двусторонняя синхронизация с Google Calendar по OAuth 2.0, генерация iCalendar-фидов, QR-коды для офлайн-точек</li>
+      <li><strong>Mini App:</strong> React 18 + Vite + Tailwind, 91 компонент — запись клиента и кабинет мастера внутри Telegram</li>
+      <li><strong>Предметная логика:</strong> расчёт свободных слотов с учётом смен и отпусков, лист ожидания, лояльность и штамп-карты, промокоды, пакеты визитов, реферальные программы, зарплаты мастеров, финансовый учёт, админ-панель с аудит-логом</li>
+      <li><strong>Качество и деплой:</strong> 112 тестовых файлов на pytest, CI поднимает реальные PostgreSQL и Redis на каждый push; деплой — push в <code>main</code> → тесты → доставка на сервер → миграции автоматом. Крон-бэкапы БД с ротацией, Sentry</li>
+    </ul>
+    <div class="hl">
+      <h4>Задача, которой я горжусь: DPI-блокировки Telegram в России</h4>
+      <p>
+        Бот терял большинство запросов к Telegram. Разобрался и починил: webhook переехал на
+        www-субдомен за Cloudflare-прокси, потому что Telegram надолго кеширует IP апекс-хоста
+        и не подхватывал смену адреса; внутри контейнера закрепил IP <code>api.telegram.org</code>,
+        так как обычный DNS отдавал IPv6 без маршрута; на исходящие запросы добавил ретраи
+        сетевых сбоёв. Бот стал работать стабильно.
+      </p>
+    </div>
+    <div class="tags">
+      <span class="tag">Python 3.12</span><span class="tag">FastAPI</span><span class="tag">aiogram 3</span>
+      <span class="tag">SQLAlchemy 2 async</span><span class="tag">PostgreSQL</span><span class="tag">Redis</span>
+      <span class="tag">Celery</span><span class="tag">Alembic</span><span class="tag">React</span>
+      <span class="tag">Vite</span><span class="tag">Tailwind</span><span class="tag">Docker</span>
+      <span class="tag">nginx</span><span class="tag">GitHub Actions</span><span class="tag">Cloudflare</span>
+      <span class="tag">Sentry</span><span class="tag">pytest</span>
+    </div>
+    <div class="p-links">
+      <a href="https://app.zapis-bot.ru">Открыть продукт →</a>
+      <a href="https://t.me/ZapislyBot">Бот @ZapislyBot →</a>
+      <span>код — по запросу</span>
+    </div>
+  </article>
+
+  <article class="proj">
+    <div class="p-top">
+      <h3>3D Marketplace</h3>
+      <span class="badge b-priv">приватный репозиторий</span>
+    </div>
+    <div class="p-role">Маркетплейс моделей для 3D-печати · fullstack · апрель 2026</div>
+    <p class="p-desc">
+      Площадка для публикации и продажи STL-моделей с просмотром прямо в браузере.
+    </p>
+    <ul class="p-list">
+      <li>Backend на FastAPI и SQLAlchemy async, авторизация на JWT, Celery для обработки загруженных файлов</li>
+      <li>Просмотр STL-моделей в браузере на <strong>Three.js и React Three Fiber</strong>, загрузка drag-n-drop</li>
+      <li>Next.js 14 с TanStack Query и Zustand, двуязычный интерфейс RU/EN на i18next</li>
+      <li>End-to-end тесты на Playwright, включая отдельный аудит 3D-вьюера и превью моделей</li>
+      <li>Юридическая база площадки: пользовательское соглашение, политика конфиденциальности, DMCA-политика и форма жалобы на двух языках</li>
+      <li>Развёртывание: Docker Compose, nginx, скрипт деплоя со сборкой на локальной машине</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">FastAPI</span><span class="tag">PostgreSQL</span><span class="tag">Celery</span>
+      <span class="tag">JWT</span><span class="tag">Next.js 14</span><span class="tag">TypeScript</span>
+      <span class="tag">Three.js</span><span class="tag">Playwright</span><span class="tag">Docker</span>
+    </div>
+    <div class="p-links"><span>код — по запросу</span></div>
+  </article>
+
+  <article class="proj">
+    <div class="p-top">
+      <h3>Scan &amp; Print</h3>
+      <span class="badge b-priv">приватный репозиторий</span>
+    </div>
+    <div class="p-role">Корпоративный сайт сервиса 3D-печати · frontend · коммерческий заказ · апрель — май 2026</div>
+    <p class="p-desc">
+      Сайт для действующей компании 3D-печати и сканирования (Пенза, на рынке с 2018 года):
+      каталог услуг, портфолио работ, блог, приём заявок. Работа по заказу клиента.
+      95 коммитов, около 5 000 строк TypeScript.
+    </p>
+    <ul class="p-list">
+      <li><strong>Next.js 16 и React 19</strong> на TypeScript, стилизация на Tailwind CSS 4</li>
+      <li>Динамические маршруты для услуг, кейсов портфолио и статей блога</li>
+      <li>3D-элементы на Three.js и React Three Fiber, анимации на GSAP и Motion</li>
+      <li>Форма заявки: React Hook Form с валидацией через Zod, отправка письма через nodemailer</li>
+      <li>SEO: программная генерация <code>sitemap.xml</code> и <code>robots.txt</code>, микроразметка FAQ</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">Next.js 16</span><span class="tag">React 19</span><span class="tag">TypeScript</span>
+      <span class="tag">Tailwind 4</span><span class="tag">Three.js</span><span class="tag">GSAP</span><span class="tag">Zod</span>
+    </div>
+    <div class="p-links"><span>код — по запросу</span></div>
+  </article>
+
+  <article class="proj">
+    <div class="p-top">
+      <h3>Music Player</h3>
+      <span class="badge b-oss">открытый код</span>
+    </div>
+    <div class="p-role">Десктопный аудиоплеер · Python и PySide6 · июнь 2026</div>
+    <p class="p-desc">
+      Плеер на 5 500 строк с честной архитектурой MVVM — модели, сервисы, viewmodel'ы и
+      представления разделены, а не свалены в один файл.
+    </p>
+    <ul class="p-list">
+      <li>Локальная библиотека: сканирование папок, чтение метаданных через mutagen, обложки альбомов</li>
+      <li>Интеграция с Яндекс.Музыкой по OAuth (device code flow)</li>
+      <li>Интернет-радио с каталогом станций, плейлисты, очередь воспроизведения</li>
+      <li>Поиск по мере набора, режимы повтора и перемешивания, светлая и тёмная темы</li>
+      <li>GitHub Actions собирает бандл PyInstaller и <strong>установщик для Windows</strong> через Inno Setup</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">Python</span><span class="tag">PySide6</span><span class="tag">mutagen</span>
+      <span class="tag">PyInstaller</span><span class="tag">Inno Setup</span><span class="tag">GitHub Actions</span>
+    </div>
+    <div class="p-links">
+      <a href="https://github.com/rappsix/music_player">Код на GitHub →</a>
+    </div>
+  </article>
+</section>
+
+<section>
+  <h2>Навыки</h2>
+  <div class="skills">
+    <div class="sk"><h4>Языки</h4><p>Python, TypeScript, JavaScript, SQL, Java (базово)</p></div>
+    <div class="sk"><h4>Backend</h4><p>FastAPI, aiogram 3, SQLAlchemy 2 (async), Alembic, Celery, Pydantic</p></div>
+    <div class="sk"><h4>Базы данных</h4><p>PostgreSQL (asyncpg), Redis, SQLite</p></div>
+    <div class="sk"><h4>Frontend</h4><p>React 18/19, Next.js 14–16, Vite, Tailwind CSS, Three.js / React Three Fiber, React Hook Form + Zod, TanStack Query, Zustand</p></div>
+    <div class="sk"><h4>Инфраструктура</h4><p>Docker, Docker Compose, nginx, GitHub Actions, Linux VPS, Cloudflare, Let's Encrypt, Sentry</p></div>
+    <div class="sk"><h4>Тестирование</h4><p>pytest, pytest-asyncio, Playwright</p></div>
+    <div class="sk"><h4>Интеграции</h4><p>Telegram Bot API и WebApp, YooKassa, ФНС «Мой налог», Google Calendar API + OAuth 2.0, iCalendar</p></div>
+    <div class="sk"><h4>Инструменты</h4><p>Git, Claude Code, Cursor, GitHub Copilot</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Ещё из практики</h2>
+  <div class="minor">
+    <div class="mi">
+      <h4>Fabric-мод на Java 17</h4>
+      <p>Анализ рыночных данных игрового аукциона: накопление статистики цен, торговая логика,
+      режим «сухого прогона» для безопасной обкатки. Gradle, около 3 000 строк.</p>
+    </div>
+    <div class="mi">
+      <h4>Парсеры организаций из 2GIS</h4>
+      <p>Сбор данных по региону на Python, дедупликация записей, выгрузка результатов в Excel.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Иван Титов · Москва · 2026</div>
+  <div>
+    <a href="https://t.me/rappsix">@rappsix</a> ·
+    <a href="mailto:titovii2007@gmail.com">titovii2007@gmail.com</a> ·
+    <a href="https://github.com/rappsix">GitHub</a>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
