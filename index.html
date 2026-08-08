@@ -120,8 +120,12 @@
   .scroll-cue i{display:block;width:1px;height:34px;background:linear-gradient(var(--cyan),transparent);animation:cue 1.9s ease-in-out infinite}
   @keyframes cue{0%,100%{opacity:.25;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
 
+  .hchar{position:relative;width:100%;height:min(72vh,620px)}
+  #char{position:absolute;inset:0;width:100%;height:100%;display:block}
+
   @media (max-width:900px){
     .hgrid{grid-template-columns:1fr}
+    .hchar{height:340px;order:-1}
     .hleft{max-width:none}
   }
   /* ══════════ STATS ══════════ */
@@ -257,7 +261,7 @@
           <span>полная или частичная занятость</span> · английский B1+
         </p>
       </div>
-      <div aria-hidden="true"></div>
+      <div class="hchar" aria-hidden="true"><canvas id="char"></canvas></div>
     </div>
   </div>
   <div class="scroll-cue">листай<i></i></div>
@@ -503,30 +507,8 @@
       ' vec3 col=mix(vec3(.006,.011,.026),vec3(.020,.085,.215),clamp(f*f*2.1,0.,1.));',
       ' col=mix(col,vec3(.040,.235,.450),clamp(length(q)*.34,0.,1.));',
       ' col+=vec3(.008,.042,.090)*smoothstep(.25,1.,r.x);',
-      // --- орб справа
-      ' vec2 c=vec2(.60,.015)+M*.05;',
-      ' vec2 d=uv-c;float rr=length(d);float Rr=.40;',
-      ' col+=vec3(.09,.36,.90)*.42*exp(-rr*3.1);',
-      ' col+=vec3(.13,.60,.95)*.20*exp(-rr*8.5);',
-      ' if(rr<Rr){',
-      '  float z=sqrt(max(Rr*Rr-rr*rr,0.))/Rr;',
-      '  vec3 nn=normalize(vec3(d/Rr,z));',
-      '  float s=fbm(nn.xy*2.6+vec2(T*.03,T*.055)+nn.z*1.4);',
-      '  float s2=fbm(nn.xy*6.0-vec2(T*.06,0.)+nn.z);',
-      '  vec3 lig=normalize(vec3(-.42,.48,.77));',
-      '  float dif=clamp(dot(nn,lig),0.,1.);',
-      '  float fres=pow(1.-z,2.6);',
-      '  vec3 oc=mix(vec3(.015,.055,.190),vec3(.13,.66,1.0),s);',
-      '  oc=mix(oc,vec3(.55,.92,1.0),s2*s2*.30);',
-      '  oc=oc*(.26+.95*dif)+vec3(.30,.72,1.0)*fres*1.05;',
-      '  float e=smoothstep(Rr,Rr-.012,rr);',
-      '  col=mix(col,oc,e);',
-      ' }',
-      // --- кольцо-ореол
-      ' float ring=smoothstep(.012,0.,abs(rr-Rr-.035));',
-      ' col+=vec3(.25,.72,1.0)*ring*.35;',
       // --- виньетка + зерно
-      ' col*=1.-.52*pow(length(uv*vec2(.60,1.)),1.6);',
+      ' col*=1.-.58*pow(length(uv*vec2(.58,1.)),1.5);',
       ' col+=(h(gl_FragCoord.xy+fract(T))-.5)*.022;',
       ' gl_FragColor=vec4(col,1.);',
       '}'
@@ -590,6 +572,266 @@
     },{threshold:0});
     ioGl.observe(cv);
   })();
+  /* ---------- 2b. low-poly персонаж (свой мини-3D на canvas 2D) ---------- */
+  (function(){
+    var cv = document.getElementById('char');
+    if(!cv) return;
+    var ctx = cv.getContext('2d');
+    if(!ctx) return;
+
+    /* ---- матрицы 4x4 (column-major как массив 16) ---- */
+    function mIdent(){return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];}
+    function mMul(a,b){
+      var o=new Array(16);
+      for(var i=0;i<4;i++)for(var j=0;j<4;j++){
+        var s=0; for(var k=0;k<4;k++) s+=a[k*4+j]*b[i*4+k];
+        o[i*4+j]=s;
+      }
+      return o;
+    }
+    function mTrans(x,y,z){var m=mIdent();m[12]=x;m[13]=y;m[14]=z;return m;}
+    function mRotX(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[5]=c;m[6]=s;m[9]=-s;m[10]=c;return m;}
+    function mRotY(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m;}
+    function mRotZ(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[0]=c;m[1]=s;m[4]=-s;m[5]=c;return m;}
+    function mScale(x,y,z){var m=mIdent();m[0]=x;m[5]=y;m[10]=z;return m;}
+    function xf(m,p){
+      return [ m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],
+               m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],
+               m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14] ];
+    }
+
+    /* ---- геометрия ---- */
+    function box(w,h,d){
+      var x=w/2,y=h/2,z=d/2;
+      return {
+        v:[[-x,-y,z],[x,-y,z],[x,y,z],[-x,y,z],[-x,-y,-z],[x,-y,-z],[x,y,-z],[-x,y,-z]],
+        f:[[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]]
+      };
+    }
+    function cyl(r,h,seg){
+      var v=[],f=[],i;
+      for(i=0;i<seg;i++){
+        var a=i/seg*Math.PI*2;
+        v.push([Math.cos(a)*r,-h/2,Math.sin(a)*r]);
+        v.push([Math.cos(a)*r, h/2,Math.sin(a)*r]);
+      }
+      for(i=0;i<seg;i++){
+        var j=(i+1)%seg;
+        f.push([i*2, j*2, j*2+1, i*2+1]);
+      }
+      var top=[],bot=[];
+      for(i=0;i<seg;i++){top.push(i*2+1);bot.push((seg-1-i)*2);}
+      f.push(top); f.push(bot);
+      return {v:v,f:f};
+    }
+
+    /* ---- сцена: список частей ---- */
+    var P = [];
+    function part(o){ P.push(o); return o; }
+
+    var SKIN='#f2cba6', HAIR='#232838', HOOD='#2554cf', HOOD2='#1c43ab',
+        DESK='#0d1526', DESK2='#0a1120', LAP='#1e2c46', SCREEN='#8af2ff',
+        CHAIR='#141d33', CUP='#1f6f8b';
+
+    // стол
+    part({g:box(2.7,.11,1.35), c:DESK,  m:function(){return mTrans(0,0,0);}});
+    part({g:box(2.45,.26,1.16), c:DESK2, m:function(){return mTrans(0,-.20,-.02);}});
+    // ножки
+    part({g:box(.10,1.0,.10), c:DESK2, m:function(){return mTrans(-1.18,-.57,.50);}});
+    part({g:box(.10,1.0,.10), c:DESK2, m:function(){return mTrans(1.18,-.57,.50);}});
+
+    // стул (спинка за персонажем)
+    part({g:box(1.06,.95,.10), c:CHAIR, m:function(s){return mMul(mTrans(0,.62,-1.02+s.lean*.10), mRotX(-.12-s.lean*.28));}});
+    part({g:box(1.0,.12,.72),  c:CHAIR, m:function(){return mTrans(0,.10,-.72);}});
+
+    // ноутбук
+    part({g:box(1.22,.05,.80), c:LAP, m:function(){return mTrans(0,.09,.12);}});
+    part({g:box(1.22,.75,.04), c:LAP, m:function(){return mMul(mTrans(0,.42,-.20), mRotX(-.30));}});
+    part({g:box(1.10,.63,.01), c:SCREEN, glow:true,
+          m:function(){return mMul(mTrans(0,.42,-.232), mRotX(-.30));}});
+
+    // кружка
+    part({g:cyl(.13,.24,10), c:CUP, m:function(){return mTrans(-1.02,.17,.30);}});
+
+    // тело
+    part({g:box(.92,1.02,.56), c:HOOD, m:function(s){return mMul(mTrans(0,.70,-.62), mRotX(-s.lean*.30));}});
+    // капюшон-воротник
+    part({g:box(.72,.20,.50), c:HOOD2, m:function(s){return mMul(mTrans(0,1.16,-.66), mRotX(-s.lean*.30));}});
+
+    // руки: плечо -> предплечье к клавиатуре
+    function arm(side){
+      part({g:box(.20,.62,.20), c:HOOD2, m:function(s){
+        var base = mMul(mTrans(side*.52,1.00,-.60), mRotX(-s.lean*.30));
+        var rot;
+        if(side>0 && s.wave>0){
+          rot = mMul(mRotZ(-1.9*s.wave), mRotX(-.25 + Math.sin(s.t*7)*.34*s.wave));
+        } else {
+          rot = mMul(mRotX(.95 - s.lean*.55), mRotZ(side*-.16));
+        }
+        return mMul(mMul(base, rot), mTrans(0,-.30,0));
+      }});
+      // кисть
+      part({g:box(.20,.14,.26), c:SKIN, m:function(s){
+        if(side>0 && s.wave>0){
+          var b = mMul(mTrans(side*.52,1.00,-.60), mRotX(-s.lean*.30));
+          var r = mMul(mRotZ(-1.9*s.wave), mRotX(-.25 + Math.sin(s.t*7)*.34*s.wave));
+          return mMul(mMul(b,r), mTrans(0,-.66,0));
+        }
+        var ty = .30 + Math.sin(s.t*11 + (side>0?1.7:0))*.028*(1-s.wave);
+        return mTrans(side*.30, ty - s.lean*.10, .18 - s.lean*.30);
+      }});
+    }
+    arm(-1); arm(1);
+
+    // голова
+    function headM(s){
+      return mMul(
+        mMul(mTrans(0, 1.52 - s.lean*.10, -.60 + s.lean*.16), mRotX(-s.lean*.34 + s.my*.12)),
+        mRotY(s.mx*.42)
+      );
+    }
+    part({g:box(.60,.62,.58), c:SKIN, m:headM});
+    part({g:box(.64,.20,.62), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.30,0));}});
+    part({g:box(.64,.30,.10), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.14,-.28));}});
+    // глаза
+    part({g:box(.09,.11,.04), c:'#101828', m:function(s){
+      return mMul(mMul(headM(s), mTrans(-.15,.03,.30)), mScale(1,s.blink,1));}});
+    part({g:box(.09,.11,.04), c:'#101828', m:function(s){
+      return mMul(mMul(headM(s), mTrans(.15,.03,.30)), mScale(1,s.blink,1));}});
+
+    /* ---- камера ---- */
+    var CAM=[.48,1.42,3.30], LOOK=[0,1.00,-.22];
+    function view(p){
+      var x=p[0]-CAM[0], y=p[1]-CAM[1], z=p[2]-CAM[2];
+      var a=Math.atan2(LOOK[0]-CAM[0], LOOK[2]-CAM[2]);
+      var b=Math.atan2(LOOK[1]-CAM[1], Math.hypot(LOOK[0]-CAM[0],LOOK[2]-CAM[2]));
+      var x1=x*Math.cos(-a)+z*Math.sin(-a), z1=-x*Math.sin(-a)+z*Math.cos(-a);
+      var y1=y*Math.cos(b)-z1*Math.sin(b),  z2=y*Math.sin(b)+z1*Math.cos(b);
+      return [x1,y1,z2];
+    }
+
+    var W=0,H=0,DPR=1,SC=1;
+    function size(){
+      var r=cv.getBoundingClientRect();
+      DPR=Math.min(window.devicePixelRatio||1,2);
+      W=r.width; H=r.height;
+      cv.width=Math.max(1,W*DPR); cv.height=Math.max(1,H*DPR);
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+      SC=Math.min(W,H)*1.06;
+    }
+    size();
+    window.addEventListener('resize',size);
+
+    function proj(p){
+      var d=p[2];
+      if(d<0.05) d=0.05;
+      var f=SC/d;
+      return [W/2 + p[0]*f, H*0.58 - p[1]*f, d];
+    }
+
+    var LIG=(function(){var v=[-.42,.80,.62],l=Math.hypot(v[0],v[1],v[2]);return [v[0]/l,v[1]/l,v[2]/l];})();
+    function tint(hex,k,rim){
+      var n=parseInt(hex.slice(1),16);
+      var r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+      r=Math.min(255,r*k + rim*36); g=Math.min(255,g*k + rim*118); b=Math.min(255,b*k + rim*150);
+      return 'rgb('+(r|0)+','+(g|0)+','+(b|0)+')';
+    }
+
+    var mx=0,my=0,tmx=0,tmy=0, lean=0, wave=0, blink=1, nextBlink=2.2, raf=null, t0=null;
+
+    window.addEventListener('mousemove',function(e){
+      tmx=(e.clientX/window.innerWidth-.5)*2;
+      tmy=-(e.clientY/window.innerHeight-.5)*2;
+    });
+
+    function draw(ts){
+      if(!t0) t0=ts;
+      var t=(ts-t0)/1000;
+
+      // скролл-прогресс по герою
+      var hero=document.querySelector('.hero');
+      var hh=hero?hero.offsetHeight:800;
+      var sp=Math.max(0,Math.min(1,(window.scrollY||window.pageYOffset||0)/(hh*0.85)));
+      lean += (sp-lean)*0.09;
+      var wTarget = sp>0.30 ? Math.min(1,(sp-0.30)/0.30) : 0;
+      wave += (wTarget-wave)*0.08;
+
+      mx+=(tmx-mx)*0.06; my+=(tmy-my)*0.06;
+
+      if(t>nextBlink){ blink=0.08; if(t>nextBlink+0.11){ blink=1; nextBlink=t+2.0+Math.random()*2.6; } }
+      else blink=1;
+
+      var S={t:t,lean:lean,wave:wave,mx:mx,my:my,blink:blink};
+
+      ctx.clearRect(0,0,W,H);
+
+      // свечение от экрана
+      var gsz=Math.min(W,H)*0.5;
+      var gr=ctx.createRadialGradient(W/2,H*0.50,0,W/2,H*0.50,gsz);
+      gr.addColorStop(0,'rgba(60,190,255,.20)');
+      gr.addColorStop(1,'rgba(60,190,255,0)');
+      ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
+
+      // собрать полигоны
+      var polys=[];
+      for(var i=0;i<P.length;i++){
+        var o=P[i], M=o.m(S), g=o.g;
+        var vw=new Array(g.v.length);
+        for(var k=0;k<g.v.length;k++) vw[k]=view(xf(M,g.v[k]));
+        for(var fi=0;fi<g.f.length;fi++){
+          var idx=g.f[fi], pts=[], zs=0;
+          for(var q=0;q<idx.length;q++){ pts.push(proj(vw[idx[q]])); zs+=vw[idx[q]][2]; }
+          // back-face cull по знаковой площади в экранных координатах
+          var area=0;
+          for(var a1=0;a1<pts.length;a1++){
+            var b1=(a1+1)%pts.length;
+            area += pts[a1][0]*pts[b1][1] - pts[b1][0]*pts[a1][1];
+          }
+          if(area>=0) continue;
+          // нормаль в мире для освещения
+          var A=xf(M,g.v[idx[0]]), B=xf(M,g.v[idx[1]]), C=xf(M,g.v[idx[2]]);
+          var u=[B[0]-A[0],B[1]-A[1],B[2]-A[2]], w2=[C[0]-A[0],C[1]-A[1],C[2]-A[2]];
+          var nx=u[1]*w2[2]-u[2]*w2[1], ny=u[2]*w2[0]-u[0]*w2[2], nz=u[0]*w2[1]-u[1]*w2[0];
+          var ln=Math.hypot(nx,ny,nz)||1; nx/=ln; ny/=ln; nz/=ln;
+          var dif=Math.max(0,nx*LIG[0]+ny*LIG[1]+nz*LIG[2]);
+          var k2 = o.glow ? 1.3 : (0.46 + 0.72*dif);
+          // подсветка от экрана: грани, смотрящие на ноутбук
+          var rim = o.glow ? 0 : Math.max(0, nz*0.62 + ny*0.16) * 0.55;
+          polys.push({p:pts, z:zs/idx.length, col:tint(o.c,k2,rim), glow:o.glow});
+        }
+      }
+      polys.sort(function(a,b){return b.z-a.z;});
+
+      for(var pi=0;pi<polys.length;pi++){
+        var pl=polys[pi];
+        ctx.beginPath();
+        ctx.moveTo(pl.p[0][0],pl.p[0][1]);
+        for(var pj=1;pj<pl.p.length;pj++) ctx.lineTo(pl.p[pj][0],pl.p[pj][1]);
+        ctx.closePath();
+        ctx.fillStyle=pl.col;
+        if(pl.glow){ ctx.shadowColor='rgba(120,235,255,.85)'; ctx.shadowBlur=26; }
+        ctx.fill();
+        ctx.shadowBlur=0;
+        ctx.strokeStyle='rgba(0,0,0,.22)'; ctx.lineWidth=.6; ctx.stroke();
+      }
+
+      raf=requestAnimationFrame(draw);
+    }
+
+    if(!reduce){
+      raf=requestAnimationFrame(draw);
+      var ioC=new IntersectionObserver(function(es){
+        es.forEach(function(en){
+          if(en.isIntersecting){ if(!raf){ t0=null; raf=requestAnimationFrame(draw);} }
+          else { cancelAnimationFrame(raf); raf=null; }
+        });
+      },{threshold:0});
+      ioC.observe(cv);
+    } else {
+      requestAnimationFrame(function(ts){ draw(ts); cancelAnimationFrame(raf); raf=null; });
+    }
+  })();
+
   /* ---------- 3. появление блоков при скролле ---------- */
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(en){
