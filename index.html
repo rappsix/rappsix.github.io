@@ -494,315 +494,6 @@
     h1.appendChild(s);
   }
 
-  /* ---------- 2b. low-poly персонаж (свой мини-3D на canvas 2D) ---------- */
-  (function(){
-    var cv = document.getElementById('char');
-    if(!cv) return;
-    var ctx = cv.getContext('2d');
-    if(!ctx) return;
-
-    /* ---- матрицы 4x4 (column-major как массив 16) ---- */
-    function mIdent(){return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];}
-    function mMul(a,b){
-      var o=new Array(16);
-      for(var i=0;i<4;i++)for(var j=0;j<4;j++){
-        var s=0; for(var k=0;k<4;k++) s+=a[k*4+j]*b[i*4+k];
-        o[i*4+j]=s;
-      }
-      return o;
-    }
-    function mTrans(x,y,z){var m=mIdent();m[12]=x;m[13]=y;m[14]=z;return m;}
-    function mRotX(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[5]=c;m[6]=s;m[9]=-s;m[10]=c;return m;}
-    function mRotY(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m;}
-    function mRotZ(a){var c=Math.cos(a),s=Math.sin(a);var m=mIdent();m[0]=c;m[1]=s;m[4]=-s;m[5]=c;return m;}
-    function mScale(x,y,z){var m=mIdent();m[0]=x;m[5]=y;m[10]=z;return m;}
-    function xf(m,p){
-      return [ m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],
-               m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],
-               m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14] ];
-    }
-
-    /* ---- геометрия ---- */
-    function box(w,h,d,noTop){
-      var x=w/2,y=h/2,z=d/2;
-      var f=[[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]];
-      if(noTop) f.splice(4,1);   // без верхней грани — её всегда закрывает причёска
-      return {
-        v:[[-x,-y,z],[x,-y,z],[x,y,z],[-x,y,z],[-x,-y,-z],[x,-y,-z],[x,y,-z],[-x,y,-z]],
-        f:f
-      };
-    }
-    function cyl(r,h,seg){
-      var v=[],f=[],i;
-      for(i=0;i<seg;i++){
-        var a=i/seg*Math.PI*2;
-        v.push([Math.cos(a)*r,-h/2,Math.sin(a)*r]);
-        v.push([Math.cos(a)*r, h/2,Math.sin(a)*r]);
-      }
-      for(i=0;i<seg;i++){
-        var j=(i+1)%seg;
-        f.push([i*2, j*2, j*2+1, i*2+1]);
-      }
-      var top=[],bot=[];
-      for(i=0;i<seg;i++){top.push(i*2+1);bot.push((seg-1-i)*2);}
-      f.push(top); f.push(bot);
-      return {v:v,f:f};
-    }
-
-    /* ---- сцена: список частей ---- */
-    var P = [];
-    function part(o){ P.push(o); return o; }
-
-    var SKIN='#f2cba6', HAIR='#232838', HOOD='#2554cf', HOOD2='#1c43ab',
-        DESK='#0d1526', DESK2='#0a1120', LAP='#1e2c46', SCREEN='#8af2ff',
-        CHAIR='#141d33', CUP='#1f6f8b';
-
-    // стол
-    part({g:box(2.7,.11,1.35), c:DESK,  m:function(){return mTrans(0,0,0);}});
-    part({g:box(2.45,.26,1.16), c:DESK2, m:function(){return mTrans(0,-.20,-.02);}});
-    // ножки
-    part({g:box(.10,1.0,.10), c:DESK2, m:function(){return mTrans(-1.18,-.57,.50);}});
-    part({g:box(.10,1.0,.10), c:DESK2, m:function(){return mTrans(1.18,-.57,.50);}});
-
-    // стул (спинка за персонажем)
-    part({g:box(1.06,.95,.10), c:CHAIR, m:function(s){return mMul(mTrans(0,.62,-1.02+s.lean*.10), mRotX(-.12-s.lean*.28));}});
-    part({g:box(1.0,.12,.72),  c:CHAIR, m:function(){return mTrans(0,.10,-.72);}});
-
-    // ноутбук
-    part({g:box(1.00,.05,.66), c:LAP, m:function(){return mTrans(0,.09,-.24);}});
-    part({g:box(1.00,.66,.04), c:LAP, m:function(){return mMul(mTrans(0,.38,.16), mRotX(.32));}});
-    part({g:box(.90,.045,.03), c:SCREEN, glow:true,
-          m:function(){return mTrans(0,.125,.055);}});
-
-    // кружка
-    part({g:cyl(.13,.24,10), c:CUP, m:function(){return mTrans(1.00,.17,.26);}});
-
-    // торс
-    part({g:box(.80,.98,.50), c:HOOD, m:function(s){return mMul(mTrans(0,.68,-.60), mRotX(-s.lean*.30));}});
-    // воротник капюшона
-    part({g:box(.60,.16,.44), c:HOOD2, m:function(s){return mMul(mTrans(0,1.15,-.63), mRotX(-s.lean*.30));}});
-    // капюшон за спиной
-    part({g:box(.52,.34,.20), c:HOOD2, m:function(s){return mMul(mTrans(0,1.06,-.84), mRotX(-s.lean*.30));}});
-
-    // плечи + руки (кисти скрыты за ноутбуком — печать читается по плечам)
-    function arm(side){
-      // «дыхание» печати: плечи качаются попеременно
-      function typ(s){ return Math.sin(s.t*9 + (side>0?1.6:0)) * .022 * (1-s.wave); }
-      // плечо
-      part({g:box(.24,.24,.34), c:HOOD, m:function(s){
-        return mMul(mTrans(side*.46, 1.02 + typ(s), -.60), mRotX(-s.lean*.30));
-      }});
-      // рука: вниз-вперёд к клавиатуре, либо вверх при махании
-      part({g:box(.19,.62,.20), c:HOOD2, m:function(s){
-        var base = mMul(mTrans(side*.46, .98 + typ(s), -.60), mRotX(-s.lean*.30));
-        var rot;
-        if(side>0 && s.wave>0.02){
-          rot = mMul(mRotZ(2.55*s.wave), mRotX(-.05 + Math.sin(s.t*7.5)*.34*s.wave));
-        } else {
-          rot = mMul(mRotX(.62 - s.lean*.40 + typ(s)*2.2), mRotZ(side*-.13));
-        }
-        return mMul(mMul(base, rot), mTrans(0,-.31,0));
-      }});
-      // кисть — видна только когда рука поднята
-      part({g:box(.19,.16,.22), c:SKIN, m:function(s){
-        if(side>0 && s.wave>0.02){
-          var b = mMul(mTrans(side*.46,.98,-.60), mRotX(-s.lean*.30));
-          var r = mMul(mRotZ(2.55*s.wave), mRotX(-.05 + Math.sin(s.t*7.5)*.34*s.wave));
-          return mMul(mMul(b,r), mTrans(0,-.70,0));
-        }
-        return mMul(mTrans(side*.30, .12, -.34), mScale(.01,.01,.01));
-      }});
-    }
-    arm(-1); arm(1);
-
-    // голова
-    function headM(s){
-      return mMul(
-        mMul(mTrans(0, 1.46 - s.lean*.10, -.62 + s.lean*.16), mRotX(-s.lean*.34 + s.my*.07)),
-        mRotY(s.mx*.30)
-      );
-    }
-    part({g:box(.54,.54,.50,true), c:SKIN, m:headM});
-    // причёска: шапка сверху, чуть шире головы
-    part({g:box(.60,.26,.56), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.225,-.01));}});
-    // затылок и бока — П-образно
-    part({g:box(.60,.34,.10), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.04,-.23));}});
-    part({g:box(.06,.32,.48), c:HAIR, m:function(s){return mMul(headM(s), mTrans(-.28,.05,-.02));}});
-    part({g:box(.06,.32,.48), c:HAIR, m:function(s){return mMul(headM(s), mTrans(.28,.05,-.02));}});
-    // чёлка
-    part({g:box(.56,.10,.10), c:HAIR, m:function(s){return mMul(headM(s), mTrans(0,.155,.215));}});
-    // брови-тень под чёлкой
-    part({g:box(.42,.025,.02), c:'#8a6a4e', m:function(s){return mMul(headM(s), mTrans(0,.085,.252));}});
-
-    // глаза
-    part({g:box(.085,.10,.03), c:'#141c2e', m:function(s){
-      return mMul(mMul(headM(s), mTrans(-.12,-.005,.252)), mScale(1,s.blink,1));}});
-    part({g:box(.085,.10,.03), c:'#141c2e', m:function(s){
-      return mMul(mMul(headM(s), mTrans(.12,-.005,.252)), mScale(1,s.blink,1));}});
-    /* ---- камера ---- */
-    var CAM=[.48,1.42,3.30], LOOK=[0,1.00,-.22];
-    function view(p){
-      var x=p[0]-CAM[0], y=p[1]-CAM[1], z=p[2]-CAM[2];
-      var a=Math.atan2(LOOK[0]-CAM[0], LOOK[2]-CAM[2]);
-      var b=Math.atan2(LOOK[1]-CAM[1], Math.hypot(LOOK[0]-CAM[0],LOOK[2]-CAM[2]));
-      var x1=x*Math.cos(-a)+z*Math.sin(-a), z1=-x*Math.sin(-a)+z*Math.cos(-a);
-      var y1=y*Math.cos(b)-z1*Math.sin(b),  z2=y*Math.sin(b)+z1*Math.cos(b);
-      return [x1,y1,z2];
-    }
-
-    /* ---- растеризатор с z-буфером (offscreen, потом масштабируем) ---- */
-    var W=0,H=0,SC=1;
-    var off=document.createElement('canvas'), octx=off.getContext('2d');
-    var RW=0,RH=0,img=null,px=null,zb=null;
-
-    function size(){
-      var r=cv.getBoundingClientRect();
-      W=Math.max(1,r.width); H=Math.max(1,r.height);
-      var dpr=Math.min(window.devicePixelRatio||1,2);
-      cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      ctx.imageSmoothingEnabled=true;
-
-      RW=Math.max(170,Math.min(300,Math.round(W*0.62)));
-      RH=Math.max(180,Math.round(RW*H/W));
-      off.width=RW; off.height=RH;
-      img=octx.createImageData(RW,RH);
-      px=new Uint32Array(img.data.buffer);
-      zb=new Float32Array(RW*RH);
-      SC=Math.min(RW,RH)*1.06;
-    }
-    size();
-    window.addEventListener('resize',size);
-
-    function proj(p){
-      var d=p[2];
-      if(d<0.05) d=0.05;
-      var f=SC/d;
-      return [RW/2 - p[0]*f, RH*0.58 - p[1]*f, d];
-    }
-
-    // заливка треугольника с проверкой глубины (инкрементальные барицентрики)
-    function tri(a,b,c,col){
-      var ax=a[0],ay=a[1],az=a[2], bx=b[0],by=b[1],bz=b[2], cx=c[0],cy=c[1],cz=c[2];
-      var minx=Math.max(0,Math.floor(Math.min(ax,bx,cx)));
-      var maxx=Math.min(RW-1,Math.ceil(Math.max(ax,bx,cx)));
-      var miny=Math.max(0,Math.floor(Math.min(ay,by,cy)));
-      var maxy=Math.min(RH-1,Math.ceil(Math.max(ay,by,cy)));
-      if(minx>maxx||miny>maxy) return;
-      var area=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);
-      if(area>-0.001 && area<0.001) return;
-      var inv=1/area;
-      // w0 — вес вершины c, w1 — вес вершины b
-      var d0x=-(by-ay)*inv, d0y=(bx-ax)*inv;
-      var d1x=(cy-ay)*inv,  d1y=-(cx-ax)*inv;
-      var dzb=bz-az, dzc=cz-az;
-      for(var y=miny;y<=maxy;y++){
-        var py=y+0.5, pxs=minx+0.5;
-        var w0=((bx-ax)*(py-ay)-(by-ay)*(pxs-ax))*inv;
-        var w1=((pxs-ax)*(cy-ay)-(py-ay)*(cx-ax))*inv;
-        var row=y*RW;
-        for(var x=minx;x<=maxx;x++, w0+=d0x, w1+=d1x){
-          if(w0<0||w1<0||w0+w1>1) continue;
-          var z=az + w1*dzb + w0*dzc;
-          var i=row+x;
-          if(z<zb[i]){ zb[i]=z; px[i]=col; }
-        }
-      }
-    }
-
-    var LIG=(function(){var v=[-.42,.80,.62],l=Math.hypot(v[0],v[1],v[2]);return [v[0]/l,v[1]/l,v[2]/l];})();
-    function packed(hex,k,rim){
-      var n=parseInt(hex.slice(1),16);
-      var r=Math.min(255,((n>>16)&255)*k + rim*36)|0;
-      var g=Math.min(255,((n>>8)&255)*k + rim*118)|0;
-      var b=Math.min(255,(n&255)*k + rim*150)|0;
-      return (255<<24)|(b<<16)|(g<<8)|r;   // ABGR (little-endian)
-    }
-
-    var mx=0,my=0,tmx=0,tmy=0, lean=0, wave=0, blink=1, nextBlink=2.2, raf=null, t0=null;
-
-    window.addEventListener('mousemove',function(e){
-      tmx=(e.clientX/window.innerWidth-.5)*2;
-      tmy=-(e.clientY/window.innerHeight-.5)*2;
-    });
-
-    function draw(ts){
-      if(!t0) t0=ts;
-      var t=(ts-t0)/1000;
-
-      var hero=document.querySelector('.hero');
-      var hh=hero?hero.offsetHeight:800;
-      var sp=Math.max(0,Math.min(1,(window.scrollY||window.pageYOffset||0)/(hh*0.85)));
-      var leanT=Math.min(1, sp/0.42);
-      lean += (leanT-lean)*0.09;
-      var wTarget = sp>0.10 ? Math.min(1,(sp-0.10)/0.20) : 0;
-      wave += (wTarget-wave)*0.08;
-
-      mx+=(tmx-mx)*0.06; my+=(tmy-my)*0.06;
-
-      if(t>nextBlink){ blink=0.08; if(t>nextBlink+0.11){ blink=1; nextBlink=t+2.0+Math.random()*2.6; } }
-      else blink=1;
-
-      var S={t:t,lean:lean,wave:wave,mx:mx,my:my,blink:blink};
-
-      // очистка буферов
-      px.fill(0);
-      zb.fill(1e9);
-
-      for(var i=0;i<P.length;i++){
-        var o=P[i], M=o.m(S), g=o.g;
-        var vw=new Array(g.v.length), vs=new Array(g.v.length);
-        for(var k=0;k<g.v.length;k++){ vw[k]=view(xf(M,g.v[k])); vs[k]=proj(vw[k]); }
-        for(var fi=0;fi<g.f.length;fi++){
-          var idx=g.f[fi];
-          // отсечение нелицевых граней
-          var area=0;
-          for(var a1=0;a1<idx.length;a1++){
-            var b1=(a1+1)%idx.length;
-            area += vs[idx[a1]][0]*vs[idx[b1]][1] - vs[idx[b1]][0]*vs[idx[a1]][1];
-          }
-          if(area<=0) continue;
-          // нормаль в мире → освещение
-          var A=xf(M,g.v[idx[0]]), B=xf(M,g.v[idx[1]]), C=xf(M,g.v[idx[2]]);
-          var u0=B[0]-A[0],u1=B[1]-A[1],u2=B[2]-A[2];
-          var w0=C[0]-A[0],w1=C[1]-A[1],w2=C[2]-A[2];
-          var nx=u1*w2-u2*w1, ny=u2*w0-u0*w2, nz=u0*w1-u1*w0;
-          var ln=Math.hypot(nx,ny,nz)||1; nx/=ln; ny/=ln; nz/=ln;
-          var dif=Math.max(0,nx*LIG[0]+ny*LIG[1]+nz*LIG[2]);
-          var kk = o.glow ? 1.3 : (0.46 + 0.72*dif);
-          var rim = o.glow ? 0 : Math.max(0, nz*0.62 + ny*0.16) * 0.55;
-          var col = packed(o.c, kk, rim);
-          for(var q=2;q<idx.length;q++) tri(vs[idx[0]], vs[idx[q-1]], vs[idx[q]], col);
-        }
-      }
-
-      octx.putImageData(img,0,0);
-
-      ctx.clearRect(0,0,W,H);
-      var gsz=Math.min(W,H)*0.5;
-      var gr=ctx.createRadialGradient(W/2,H*0.60,0,W/2,H*0.60,gsz);
-      gr.addColorStop(0,'rgba(70,200,255,.30)');
-      gr.addColorStop(1,'rgba(70,200,255,0)');
-      ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
-      ctx.drawImage(off,0,0,W,H);
-
-      raf=requestAnimationFrame(draw);
-    }
-
-    if(!reduce){
-      raf=requestAnimationFrame(draw);
-      var ioC=new IntersectionObserver(function(es){
-        es.forEach(function(en){
-          if(en.isIntersecting){ if(!raf){ t0=null; raf=requestAnimationFrame(draw);} }
-          else { cancelAnimationFrame(raf); raf=null; }
-        });
-      },{threshold:0, rootMargin:'300px'});
-      ioC.observe(cv);
-    } else {
-      requestAnimationFrame(function(ts){ draw(ts); cancelAnimationFrame(raf); raf=null; });
-    }
-  })();
-
   /* ---------- 3. появление блоков при скролле ---------- */
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(en){
@@ -854,6 +545,165 @@
       });
     })(projs[n]);
   }
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "./three.module.min.js" } }
+</script>
+<!-- 3D-модель RobotExpressive: Tomas Laulhe, доработка Don McCurdy, лицензия CC0 (из примеров three.js) -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './GLTFLoader.js';
+
+(function(){
+  var cv = document.getElementById('char');
+  if(!cv) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  } catch(e){ return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 1.35, 5.0);
+  camera.lookAt(0, 1.05, 0);
+
+  scene.add(new THREE.HemisphereLight(0x9ecbff, 0x0a1020, 1.15));
+  var key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(2.5, 4.5, 3.5); scene.add(key);
+  var rimA = new THREE.PointLight(0x2f7bff, 26, 14); rimA.position.set(-3, 2.2, -2.4); scene.add(rimA);
+  var rimB = new THREE.PointLight(0x22d3ee, 20, 14); rimB.position.set(3.2, 1.4, -1.8); scene.add(rimB);
+  var fill = new THREE.PointLight(0x7dd3fc, 9, 12); fill.position.set(0, 1.2, 3.2); scene.add(fill);
+
+  function size(){
+    var r = cv.getBoundingClientRect();
+    if(!r.width || !r.height) return;
+    renderer.setSize(r.width, r.height, false);
+    camera.aspect = r.width / r.height;
+    camera.updateProjectionMatrix();
+  }
+  size();
+  window.addEventListener('resize', size);
+
+  var mixer = null, model = null, actions = {}, current = null;
+  var clock = new THREE.Clock();
+
+  function play(name, fade){
+    var next = actions[name];
+    if(!next || next === current) return;
+    next.reset();
+    next.setLoop(name === 'Wave' || name === 'ThumbsUp' ? THREE.LoopRepeat : THREE.LoopRepeat, Infinity);
+    next.play();
+    if(current) current.crossFadeTo(next, fade || 0.35, false); else next.fadeIn(0.4);
+    current = next;
+  }
+
+  new GLTFLoader().load('./RobotExpressive.glb', function(gltf){
+    model = gltf.scene;
+    model.updateMatrixWorld(true);
+    // габариты считаем по обычным мешам: у skinned-мешей bbox сильно раздут
+    var box = new THREE.Box3(), tmp = new THREE.Box3(), any = false;
+    model.traverse(function(o){
+      if(o.isMesh && !o.isSkinnedMesh){
+        tmp.setFromObject(o);
+        if(any) box.union(tmp); else { box.copy(tmp); any = true; }
+      }
+    });
+    if(!any) box.setFromObject(model);
+    var sz = new THREE.Vector3(); box.getSize(sz);
+    var k = 2.35 / Math.max(0.001, sz.y);
+    model.scale.setScalar(k);
+    model.updateMatrixWorld(true);
+    box.makeEmpty(); any = false;
+    model.traverse(function(o){
+      if(o.isMesh && !o.isSkinnedMesh){
+        tmp.setFromObject(o);
+        if(any) box.union(tmp); else { box.copy(tmp); any = true; }
+      }
+    });
+    var c = new THREE.Vector3(); box.getCenter(c);
+    model.position.x -= c.x;
+    model.position.z -= c.z;
+    model.position.y -= box.min.y;
+    // перекраска под палитру сайта: жёлтый корпус → синий, глаза → циан
+    var hsl = {};
+    model.traverse(function(o){
+      if(!o.isMesh) return;
+      o.frustumCulled = false;
+      var mats = Array.isArray(o.material) ? o.material : [o.material];
+      o.material = mats.map(function(m){
+        if(!m || !m.color) return m;
+        var n = m.clone();
+        n.color.getHSL(hsl);
+        if(hsl.h > 0.06 && hsl.h < 0.20 && hsl.s > 0.25){
+          n.color.setHSL(0.605, 0.72, Math.min(0.62, hsl.l * 1.05));       // корпус — синий
+        } else if(hsl.l < 0.12){
+          n.color.setHex(0x0d1526);                                          // тёмные детали
+          if('emissive' in n){ n.emissive = new THREE.Color(0x22d3ee); n.emissiveIntensity = 0.85; }
+        } else {
+          n.color.setHSL(0.56, 0.18, Math.min(0.78, hsl.l * 1.02));          // металл — холодный
+        }
+        if('roughness' in n) n.roughness = Math.min(1, (n.roughness !== undefined ? n.roughness : 0.7) * 0.85);
+        if('metalness' in n) n.metalness = 0.25;
+        return n;
+      });
+      if(o.material.length === 1) o.material = o.material[0];
+    });
+    scene.add(model);
+
+    mixer = new THREE.AnimationMixer(model);
+    gltf.animations.forEach(function(clip){ actions[clip.name] = mixer.clipAction(clip); });
+    play('Idle');
+  });
+
+  var tmx = 0, tmy = 0, mx = 0, my = 0, hovering = false, mode = 'Idle', raf = null, visible = true;
+
+  window.addEventListener('mousemove', function(e){
+    tmx = (e.clientX / window.innerWidth - 0.5) * 2;
+    tmy = -(e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  cv.addEventListener('mouseenter', function(){ hovering = true; });
+  cv.addEventListener('mouseleave', function(){ hovering = false; });
+
+  function frame(){
+    raf = requestAnimationFrame(frame);
+    var dt = clock.getDelta();
+    if(mixer) mixer.update(dt);
+
+    mx += (tmx - mx) * 0.06;
+    my += (tmy - my) * 0.06;
+
+    var hero = document.querySelector('.hero');
+    var hh = hero ? hero.offsetHeight : 800;
+    var sp = Math.max(0, Math.min(1, (window.scrollY || 0) / (hh * 0.8)));
+
+    var want = sp > 0.12 ? 'Wave' : (hovering ? 'ThumbsUp' : 'Idle');
+    if(want !== mode){ mode = want; play(want); }
+
+    if(model){
+      model.rotation.y += (mx * 0.55 - model.rotation.y) * 0.06;
+      model.position.y += ((-my * 0.06) - model.position.y) * 0.04;
+    }
+    camera.position.y += ((1.35 - my * 0.20) - camera.position.y) * 0.05;
+    camera.lookAt(0, 1.05, 0);
+
+    renderer.render(scene, camera);
+  }
+
+  if(!reduce) raf = requestAnimationFrame(frame);
+
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      if(en.isIntersecting){ if(!raf && !reduce){ clock.getDelta(); raf = requestAnimationFrame(frame); } }
+      else if(raf){ cancelAnimationFrame(raf); raf = null; }
+    });
+  }, { threshold: 0, rootMargin: '260px' });
+  io.observe(cv);
 })();
 </script>
 </body>
