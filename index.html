@@ -391,7 +391,8 @@
     <article class="proj rv">
       <div class="p-top">
         <h3>Scan &amp; Print</h3>
-        <span class="badge">приватный репозиторий</span>
+        <span class="badge b-live">в продакшне</span>
+        <span class="badge">открытый код</span>
       </div>
       <div class="p-role">Корпоративный сайт сервиса 3D-печати · frontend · коммерческий заказ · апрель — май 2026</div>
       <p class="p-desc">
@@ -412,7 +413,7 @@
       </div>
       <div class="p-links">
         <a href="https://scanprint58.ru">Открыть сайт →</a>
-        <span>код — по запросу</span>
+        <a href="https://github.com/rappsix/printscan-site">Код на GitHub →</a>
       </div>
     </article>
 
@@ -445,7 +446,7 @@
     <article class="proj rv">
       <div class="p-top">
         <h3>Парсеры 2ГИС</h3>
-        <span class="badge">приватный репозиторий</span>
+        <span class="badge">открытый код</span>
       </div>
       <div class="p-role">Сбор данных · Python · февраль — март 2026</div>
       <p class="p-desc">
@@ -460,7 +461,34 @@
       <div class="tags">
         <span class="tag">Python</span><span class="tag">Selenium</span><span class="tag">headless</span>
       </div>
-      <div class="p-links"><span>код — по запросу</span></div>
+      <div class="p-links">
+        <a href="https://github.com/rappsix/2gis-office-parsers">Код на GitHub →</a>
+      </div>
+    </article>
+
+    <article class="proj rv">
+      <div class="p-top">
+        <h3>Бот рассылки коммерческих предложений</h3>
+        <span class="badge">открытый код</span>
+      </div>
+      <div class="p-role">Автоматизация продаж · Python · февраль 2026</div>
+      <p class="p-desc">
+        Холодная e-mail-рассылка по базе организаций, собранной парсером 2ГИС: очередь из Excel,
+        отправка по расписанию, разбор ответов SMTP и отчёты в Telegram.
+      </p>
+      <ul class="p-list">
+        <li><strong>Защита от блокировки:</strong> одно письмо за проход с паузой 4–6 минут, экспоненциальный бэкофф на спам-отказах и кулдаун после трёх подряд</li>
+        <li><strong>Статусы вместо памяти:</strong> результат каждой отправки пишется в базу, падение процесса не теряет прогресс и не создаёт дублей</li>
+        <li><strong>Разбор ошибок SMTP:</strong> несуществующий адрес закрывается навсегда, таймаут возвращается в очередь отдельным скриптом</li>
+        <li><strong>Целостность данных:</strong> flock на файле базы и атомарная запись — параллельный отчёт не прочитает половину файла</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">Python</span><span class="tag">smtplib</span><span class="tag">pandas</span>
+        <span class="tag">Telegram Bot API</span><span class="tag">flock</span>
+      </div>
+      <div class="p-links">
+        <a href="https://github.com/rappsix/scanprint-mailer">Код на GitHub →</a>
+      </div>
     </article>
   </section>
 
